@@ -1,11 +1,33 @@
 from flask import Flask
+from flaskext.mysql import MySQL
 import nflgame
 
-
 app = Flask(__name__)
+mysql = MySQL(app)
+
+app.config['MYSQL_DATABASE_USER'] = 'secret'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'secret'
+app.config['MYSQL_DATABASE_DB'] = 'secret'
+app.config['MYSQL_DATABASE_HOST'] = 'secret'
+print(app.config['MYSQL_DATABASE_USER'])
+mysql.init_app(app)
 
 @app.route("/")
 def main():
+
+    #tests connecting to the mysql database that's setup on AWS when the configs are provided
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * from player;")
+
+    data = cursor.fetchone()
+    print(data)
+
+    cursor.close()
+    conn.close()
+
+
     games = nflgame.games(2013, week=1)
     players = nflgame.combine_game_stats(games)
     for p in players.rushing().sort('rushing_yds').limit(5):
