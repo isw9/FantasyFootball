@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS offense(
   passingScoresAverage DECIMAL (4, 1) NOT NULL DEFAULT 0.0,
   receivingYardsAverage DECIMAL (4, 1) NOT NULL DEFAULT 0.0,
   receivingScoresAverage DECIMAL (4, 1) NOT NULL DEFAULT 0.0,
+  season INT NOT NULL DEFAULT 2019,
+
+  primary key (offenseID)
 )
 
 CREATE TABLE IF NOT EXISTS game (
@@ -25,6 +28,8 @@ CREATE TABLE IF NOT EXISTS game (
   rushingYards INT UNSIGNED NOT NULL DEFAULT 0,
   receivingYards INT UNSIGNED NOT NULL DEFAULT 0,
   receptions INT UNSIGNED NOT NULL DEFAULT 0,
+  receivingTargets INT UNSIGNED NOT NULL DEFAULT 0,
+  rushingAttempts INT UNSIGNED NOT NULL DEFAULT 0,
   rushingScores INT UNSIGNED NOT NULL DEFAULT 0,
   passingScores INT UNSIGNED NOT NULL DEFAULT 0,
   receivingScores INT UNSIGNED NOT NULL DEFAULT 0,
@@ -38,6 +43,8 @@ CREATE TABLE IF NOT EXISTS game (
   pointsAllowed INT UNSIGNED NOT NULL DEFAULT 0,
   rushingYardsAllowed INT NOT NULL DEFAULT 0,
   passingYardsAllowed INT NOT NULL DEFAULT 0,
+  defensiveTouchdowns INT NOT NULL DEFAULT 0,
+  defensiveSafeties INT NOT NULL DEFAULT 0,
 
   fieldGoalsMade INT UNSIGNED NOT NULL DEFAULT 0,
   fieldGoalsMissed INT UNSIGNED NOT NULL DEFAULT 0,
@@ -46,8 +53,8 @@ CREATE TABLE IF NOT EXISTS game (
 
   season INT NOT NULL DEFAULT 2019,
 
-  FOREIGN KEY (playerID) REFERENCES player(playerID)
-  FOREIGN KEY (opponentID) REFERENCES player(playerID)
+  FOREIGN KEY (playerID) REFERENCES player(playerID),
+  FOREIGN KEY (opponentID) REFERENCES player(playerID),
 
   primary key (gameId)
 )
