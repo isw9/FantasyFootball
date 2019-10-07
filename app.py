@@ -63,6 +63,20 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 @app.route("/")
 def main():
     return "Hello"
+
+@app.route("/weeklyStart")
+def weeklyStart():
+    return "this is where we tell users who to start on a weekly basis"
+
+@app.route('/player/<player_id>')
+def player(player_id):
+    playerID = player_id
+    return "show stats for {0}".format(playerID)
+
+@app.route('/draft')
+def draft():
+    return "this is where we set up the draft page"
+
 def add_weekly_game_stats_to_database(filename, year, opponentSideOfBall):
     stats = {
     'passingYards': 0,
