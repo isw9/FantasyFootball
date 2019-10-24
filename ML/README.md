@@ -6,12 +6,37 @@
 
 ## Requirments:
     pandas
+    numpy
+    sklearn
+    sqlalchemy
     Keras
     matplotlib
     
 ## Notes:
-    10/17/2019:
+    [10/17/2019]
            Initial setup w/pipenv.
            
            First goal is to write functions to pull and format data from AWS DB to build
            training datasets.
+           
+    [10/24/2019]
+            Researched best practices w/LSTM and considered how to setup DataBuilder 
+            accordingly.
+            
+            Commits:
+            - Abstracted MySQL engine and queries. Engine initialized at object init.
+            - Function to fetch "global" (all data in DB) min and max bounds for
+              each attribute in game and player tables. Will allow for normalization
+              of training data with respect to all data.
+            - Manually drop unfilled (0's) attributes, remaining:
+                ['gameID', 'passingYards', 'rushingYards', 'receivingYards',
+               'receptions', 'receivingTargets', 'rushingAttempts', 'rushingScores',
+               'passingScores', 'receivingScores', 'fumblesLost',
+               'interceptionsThrown', 'season', 'playerID', 'opponentTeamID',
+               'ageDuringGame', 'weekNumber', 'passingCompletions', 'passingAttempts']
+            - "Wiggle" normalization: extends min/max values for attribute data then
+              normalizes to [0,1]. Idea is to allow the network to guess below data
+              min or above data max.       
+            
+            Next:
+            - Method to format DataFrame into time-series training set.
