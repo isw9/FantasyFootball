@@ -62,6 +62,7 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 
 @app.route("/")
 def main():
+
     return "Hello"
 
 @app.route("/weeklyStart")
@@ -309,5 +310,49 @@ def add_team_stats_for_year(filename, year, position):
         input_file.close()
     except FileNotFoundError:
         print("please enter a valid team data file")
+
+def fantasy_points_from_game_skill_player(gameID):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT * FROM game WHERE gameID = \'{}\';".format(gameID)
+    cursor.execute(statement)
+
+    row = cursor.fetchone()
+
+    if row == None:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return -100
+    else:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        passing_yards = row[1]
+        rusing_yards = row[2]
+        receiving_yards = row[3]
+        receptions = row[4]
+        rushing_scores = row[7]
+        passing_scores = row[8]
+        receiving_scores = row[9]
+        fumbles_lost = row[10]
+        interceptions_thrown = row[11]
+        special_teams_scores = row[12]
+
+        fantasy_points = 0.0
+
+        fantasy_points += (passing_yards * .04)
+        fantasy_points += (rusing_yards * .1)
+        fantasy_points += (receiving_yards * .1)
+        fantasy_points += (receptions * 1)
+        fantasy_points += (rushing_scores * 6)
+        fantasy_points += (passing_scores * 4)
+        fantasy_points += (receiving_scores * 6)
+        fantasy_points -= (fumbles_lost * 2)
+        fantasy_points -= (interceptions_thrown * 2)
+        fantasy_points += (special_teams_scores * 6)
+
+        return fantasy_points
+
 if __name__ == "__main__":
     app.run()
