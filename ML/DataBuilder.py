@@ -117,19 +117,19 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         else:   # Expand series by "sliding" across data rather than stepping #TODO: FIX
             data=df.values
             exp_data = np.zeros((((n_rows-time_steps+1)*time_steps), n_cols))
-            for i in range(0,len(exp_data)):
-                exp_data[i*time_steps:(i+1)*time_steps] = data[i:i+time_steps]
-            data = exp_data.reshape(len(exp_data)/time_steps, time_steps, n_cols)
+            for i in range(0,len(data) - time_steps + 1):
+                exp_data[i*time_steps: (i+1)*time_steps] = data[i:i+time_steps]
+            data = exp_data.reshape(int(len(exp_data)/time_steps), time_steps, n_cols)
             return data
 
 
 if __name__ == "__main__":  # DB Connection Test
 
     u = sys.argv[1] ; p = sys.argv[2] ; db = sys.argv[3] ; h = sys.argv[4]
-    print(CH+"u: " + u)
-    print(CH+"p: " + p)
+    print(CH+" u: " + u)
+    print(CH+" p: " + p)
     print(CH+"db: " + db)
-    print(CH+"h: " + h)
+    print(CH+" h: " + h)
 
     dB = DataBuilder(u, p, db, h)
     df = dB.get_player_stats_LIMgames(666,21)
