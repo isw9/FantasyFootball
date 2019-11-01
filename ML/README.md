@@ -53,3 +53,19 @@
                   
             Next:
                 - Fix sliding method. Quick graphing methods.
+                
+    [11/1/2019]
+            Small fixes to DatBuilder, added method for adding "0 weeks", and inital LSTM 
+            tests.
+            
+            Commits:
+                - Fixed data sliding
+                - Added train/test split for time series builder
+                - Added method to add "0 weeks" since there are no db entries if a player is
+                  injured or otherwise doesn't register a stat during a week. Ideally this
+                  will allow models to infer when a player is injured and make better 
+                  predictions.
+                - Optimizations
+                
+            Next:
+                - Models and graphs

@@ -10,8 +10,6 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
     def __init__(self, user, password, db, host):
         # Initialize DB Connection
         self.setup_connection(user, password, db, host)
-        # Set MIN/MAX values for all attributes (allows for relative normalization)
-        self.db_get_minmax()
 
     def setup_connection(self, u, p, db, h): #  Connect to DB, set object
         self.db_connection_str = 'mysql+pymysql://' + u + ':' + p + '@' + h + '/' + db
@@ -80,8 +78,8 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
                 "interceptionsThrown, passingCompletions, passingAttempts"
         query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + ";"
         P_df = self.query_to_df(query)
-        P_df = P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True])
-        return P_df
+        P_df = P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
+        return P_df.reset_index(drop=True)
 
     def get_player_stats_LIMgames(self, playerID, limit):  # Return non 0 player stats w/limit as DataFrame
         info = "gameID, season, weekNumber, opponentTeamID, ageDuringGame"
@@ -90,8 +88,8 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
                 "interceptionsThrown, passingCompletions, passingAttempts"
         query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + " LIMIT " + str(limit) +";"
         P_df = self.query_to_df(query)
-        P_df = P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True])
-        return P_df
+        P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
+        return P_df.reset_index(drop=True)
 
     def get_player_stats_LIMseason(self, playerID, season):  # Return non 0 player stats w/limit as DataFrame
         info = "gameID, season, weekNumber, opponentTeamID, ageDuringGame"
@@ -100,27 +98,57 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
                 "interceptionsThrown, passingCompletions, passingAttempts"
         query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + " and season = " + str(season) + ";"
         P_df = self.query_to_df(query)
-        P_df = P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True])
-        return P_df
+        P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
+        return P_df.reset_index(drop=True)
+
+    def df_add_0Weeks(self, df):
+        l_week = int(df.iloc[0]['weekNumber']) ; l_season = int(df.iloc[0]['season'])
+
+        zero_stats = np.zeros(18)
+        for i in range(1, len(df)):
+            # Set current week
+            c_week = int(df.iloc[i]['weekNumber']) ; c_season = int(df.iloc[i]['season'])
+            if int(c_season) == int(l_season):  # Add weeks into same season
+                dif_week = c_week - l_week
+                if dif_week > 1:  # add dif_week-1 weeks w/"weekNumber" = [l_week+1 ... c_week -1]
+                    zero_stats[1] = c_season ; zero_stats[4] = int((df.iloc[i]['ageDuringGame']))
+                    for w in range(l_week+1, c_week):
+                        zero_stats[0] = i*10000 + w ; zero_stats[2] = w
+                        df = df.append(pd.DataFrame( zero_stats.reshape(-1, len(zero_stats)), columns=df.columns))
+
+            else: # Add weeks between seasons
+                dif_week = 17 - l_week
+                if dif_week != 0:
+                    for w in range(l_week, 17):
+                        zero_stats[0] = i*10000 + w ; zero_stats[1] = l_season
+                        zero_stats[2] = w+1 ; zero_stats[4] = int((df.iloc[i]['ageDuringGame']))
+                        df = df.append(pd.DataFrame(zero_stats.reshape(-1, len(zero_stats)), columns=df.columns))
+            l_week = c_week ; l_season = c_season
+
+        df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
+        return df.reset_index(drop=True)
 
     def build_series_set(self, df, time_steps, train_percentage, slide=False):  # Return RNN training series from DataFrame
         n_rows = len(df)
         n_cols = len(df.columns)
-
+        df.drop(columns=["gameID"],inplace=True)
         if not slide:   # Standard reshape
             df = df[n_rows % time_steps:]  # cut off beginning of df so n_rows % time_steps = 0
             n_rows = len(df)
             data = df.values
             data = data.reshape(int(n_rows/time_steps), time_steps, n_cols)
-            return data
 
-        else:   # Expand series by "sliding" across data rather than stepping #TODO: FIX
+        else:   # Expand series by "sliding" across data rather than stepping
             data=df.values
             exp_data = np.zeros((((n_rows-time_steps+1)*time_steps), n_cols))
             for i in range(0,len(data) - time_steps + 1):
                 exp_data[i*time_steps: (i+1)*time_steps] = data[i:i+time_steps]
             data = exp_data.reshape(int(len(exp_data)/time_steps), time_steps, n_cols)
-            return data
+
+        train = data[0: int(train_percentage * len(data))]
+        test = data[int(train_percentage * len(data)):]
+
+        return (train, test)
 
 
 if __name__ == "__main__":  # DB Connection Test
@@ -134,5 +162,7 @@ if __name__ == "__main__":  # DB Connection Test
     dB = DataBuilder(u, p, db, h)
     df = dB.get_player_stats_LIMgames(666,21)
 
-    data = dB.build_series_set(df, 10, 1, slide=True)
-    print(data)
+    print(df)
+    print("---")
+    df = dB.df_add_0Weeks(df)
+    print(df)
