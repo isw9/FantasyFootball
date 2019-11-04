@@ -62,21 +62,22 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 
 @app.route("/")
 def main():
+    return "this will be the home page that shows the leaders"
 
-    return "Hello"
-
-@app.route("/weeklyStart")
+@app.route('/weeklyStart')
 def weeklyStart():
-    return "this is where we tell users who to start on a weekly basis"
+    return "this is where we set up the weekly start page"
 
-@app.route('/player/<player_id>')
-def player(player_id):
-    playerID = player_id
-    return "show stats for {0}".format(playerID)
+@app.route("/leaders/<number_of_players>")
+def leaders (number_of_players):
+    return "this will be a GET endpoint to show season stats for the top {0} players at each position".format(number_of_players)
 
-@app.route('/draft')
-def draft():
-    return "this is where we set up the draft page"
+@app.route('/player/<player_name>')
+def player(player_name):
+    playerName = player_name
+    return "this will be a GET endpoint to show weekly projected stats for {0}".format(playerName)
+
+
 
 def add_weekly_game_stats_to_database(filename, year, opponentSideOfBall):
     stats = {
