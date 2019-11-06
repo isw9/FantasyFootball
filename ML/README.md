@@ -55,7 +55,7 @@
                 - Fix sliding method. Quick graphing methods.
                 
     [11/1/2019]
-            Small fixes to DatBuilder, added method for adding "0 weeks", and inital LSTM 
+            Small fixes to DataBuilder, added method for adding "0 weeks", and inital LSTM 
             tests.
             
             Commits:
@@ -69,3 +69,17 @@
                 
             Next:
                 - Models and graphs
+                
+    [11/6/2019]
+            Had to go back and make fixes to DataBuilder methods
+            
+            Commits:
+                - Fix normalization to account for 0 opponentTeamID's from 0Weeks method.
+                  Now picks a random ID. Will revisit and change this if neccessary. Likely
+                  will remove opponentTeamID from input.
+                - Setup series training data method properly.
+                - Added __init__.py so I can import local modules.
+            
+            Next:
+                - Models and graphs
+    
