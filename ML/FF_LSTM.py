@@ -18,10 +18,13 @@ if __name__ == "__main__":
 
     dB = DataBuilder(u, p, db, h)
     df = dB.get_player_stats(666)
+    dB.db_get_minmax()
+    print(len(df))
     df = dB.df_add_0Weeks(df)
-    df = dB.wiggle_norm(df)
+    print(len(df))
+    df = dB.df_wiggle_norm(df, 0.05)
     Xtrain, Ytrain, Xtest, Ytest = dB.build_series_set(df, 10, .5, slide=True)
-
+    print(Xtrain.shape, Ytrain.shape, Xtest.shape, Ytest.shape)
 
 
 

@@ -85,7 +85,8 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + ";"
+        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC;"
+        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + orderBy
         P_df = self.query_to_df(query)
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
         return P_df.reset_index(drop=True)
@@ -95,7 +96,8 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + " LIMIT " + str(limit) +";"
+        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
+        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + orderBy + " LIMIT " + str(limit) + ""
         P_df = self.query_to_df(query)
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
         return P_df.reset_index(drop=True)
@@ -105,7 +107,8 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + " and season = " + str(season) + ";"
+        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
+        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + " and season = " + str(season) + orderBy + ";"
         P_df = self.query_to_df(query)
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
         return P_df.reset_index(drop=True)
@@ -113,6 +116,7 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
     def df_add_0Weeks(self, df):
         l_week = int(df.iloc[0]['weekNumber']) ; l_season = int(df.iloc[0]['season'])
         zero_stats = np.zeros(18)
+
         for i in range(1, len(df)):
             # Set current week
             c_week = int(df.iloc[i]['weekNumber']) ; c_season = int(df.iloc[i]['season'])
@@ -177,19 +181,12 @@ if __name__ == "__main__":  # DB Connection Test
     print(CH+" h: " + h)
 
     dB = DataBuilder(u, p, db, h)
-    df = dB.get_player_stats(666)
+    df = dB.get_player_stats_LIMseason(666, 2015)
     dB.db_get_minmax()
-    df = dB.df_add_0Weeks(df)
-    print(dB.gameMinMax)
-    df = dB.df_wiggle_norm(df, 0.05)
-
-    print(df.max())
-    print(df.min())
     print(df)
-    """
-    X_train, Y_train, X_test, Y_test = dB.build_series_set(df, 2, .5, slide=True)
-    print(X_train.shape)
-    print(X_test.shape)
-    print(Y_train.shape)
-    print(Y_test.shape)
-    """
+    print(len(df))
+    df = dB.df_add_0Weeks(df)
+    print(df)
+    print(len(df))
+
+

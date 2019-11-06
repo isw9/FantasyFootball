@@ -77,9 +77,12 @@
                 - Fix normalization to account for 0 opponentTeamID's from 0Weeks method.
                   Now picks a random ID. Will revisit and change this if neccessary. Likely
                   will remove opponentTeamID from input.
+                - Added sorting to queries, created problem when not fetching all entries.
                 - Setup series training data method properly.
                 - Added __init__.py so I can import local modules.
             
             Next:
                 - Models and graphs
+    
+    
     
