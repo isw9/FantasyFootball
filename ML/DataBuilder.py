@@ -60,7 +60,7 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
                     df = df.drop(columns=[col])
         return df
 
-    def df_wiggle_norm(self, df, wiggle):  # Normalize columns of DataFrame based on attribute MinMax w/ wiggle% margins #TODO Check min 0s, recheck MinMax
+    def df_wiggle_norm(self, df, wiggle):  # Normalize columns of DataFrame based on attribute MinMax w/ wiggle% margins
         w = wiggle
         for col in df.columns:
             if col == "opponentTeamID":
