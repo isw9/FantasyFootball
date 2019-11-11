@@ -1,6 +1,7 @@
 from flask import Flask
 from flaskext.mysql import MySQL
 import nflgame
+from flask import request
 
 app = Flask(__name__)
 mysql = MySQL(app)
@@ -72,10 +73,39 @@ def weeklyStart():
 def leaders (number_of_players):
     return "this will be a GET endpoint to show season stats for the top {0} players at each position".format(number_of_players)
 
-@app.route('/player/<player_name>')
-def player(player_name):
-    playerName = player_name
-    return "this will be a GET endpoint to show weekly projected stats for {0}".format(playerName)
+
+@app.route('/player/', methods = ['GET'])
+def player():
+    player_name = request.args.get('player_name')
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = statement = "SELECT * FROM player WHERE playerName = (\'{}\');".format(player_name)
+
+    cursor.execute(statement)
+    row = cursor.fetchone()
+
+
+    if row == None:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        code = 400
+        msg = " player with name {} could not be found;".format(player_name)
+        return msg, code
+
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+    print(row)
+    name = row[2]
+    player = {
+        "name": row[2],
+        "average points scored": 10.0
+    }
+    print(name)
+    return player
+
 
 
 
