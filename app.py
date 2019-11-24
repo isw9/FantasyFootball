@@ -3,6 +3,7 @@ from flaskext.mysql import MySQL
 import nflgame
 from flask import request
 from heapq import nlargest
+from controllers import *
 
 app = Flask(__name__)
 mysql = MySQL(app)
@@ -15,6 +16,7 @@ mysql.init_app(app)
 
 offensive_players = set()
 bad_abbreviation_set = {'TAM', 'GNB', 'NOR', 'KAN', 'NWE', 'SFO', 'STL', 'SDG'}
+
 bad_abbreviation_dict = {
 'TAM': 'TB',
 'GNB': 'GB',
@@ -24,8 +26,8 @@ bad_abbreviation_dict = {
 'SFO': 'SF',
 'STL': 'LAR',
 'SDG': 'LAC'
-
 }
+
 abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Atlanta Falcons': 'ATL',
 'Baltimore Ravens': 'BAL',
@@ -64,129 +66,36 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 
 @app.route("/")
 def main():
-    return "this will be the home page that shows the leaders"
+    return "this will be the home page that shows the leaders for each position"
 
-@app.route('/weeklyStart')
+@app.route('/playerProjection')
 def weeklyStart():
-    return "this is where we set up the weekly start page"
+    return "this is the page that shows a weekly projection for a given week and year"
 
-@app.route('/api/player/', methods = ['GET'])
+@app.route('/comparison')
+def comparison():
+    return "this will be the page used to compare two players for a given week"
+
+@app.route('/api/playerProjection', methods = ['GET'])
 def player():
+
+    year = request.args.get('year')
+    week_number = request.args.get('week')
     player_name = request.args.get('player_name')
-    playerName = playerName.split('*', 1)[0]
-    playerName = playerName.split('+', 1)[0]
-    playerName = playerName.split('\\', 1)[0]
-    strippedPlayerName = playerName.replace("'", "")
+    player_name = player_name.split('*', 1)[0]
+    player_name = player_name.split('+', 1)[0]
+    player_name = player_name.split('\\', 1)[0]
+    strippedPlayerName = player_name.replace("'", "")
 
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = statement = "SELECT * FROM player WHERE playerName = (\'{}\');".format(strippedPlayerName)
+    return api_player_projection(year, week_number, strippedPlayerName)
 
-    cursor.execute(statement)
-    row = cursor.fetchone()
-
-
-    if row == None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        code = 400
-        msg = " player with name {} could not be found;".format(strippedPlayerName)
-        return msg, code
-
-
-    cursor.close()
-    conn.commit()
-    conn.close()
-    print(row)
-    name = row[2]
-    player = {
-        "name": row[2],
-        "average points scored": 10.0
-    }
-
-    return player
-
-@app.route('/api/leaders/', methods = ['GET'])
+@app.route('/api/leaders', methods = ['GET'])
 def leaders():
     year = request.args.get('year')
     number_players = request.args.get('number_players')
     position = request.args.get('position').upper()
 
-    valid_positions = {'WR', 'QB', 'RB', 'TE'}
-
-    if position not in valid_positions:
-        code = 400
-        msg = " position {} is not valid;".format(position)
-        return msg, code
-
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {};".format(position, year)
-    cursor.execute(statement)
-
-    playerIDToCumulativeScore = dict()
-    playerIDToGamesPlayed = dict()
-    seenPlayers = set()
-
-    for record in iter_row(cursor, 100):
-        playerID = record[25]
-
-        if playerID in seenPlayers:
-            current_score = playerIDToCumulativeScore[playerID]
-            game_score = fantasy_points_from_game_stats(record)
-            playerIDToCumulativeScore[playerID] = current_score + game_score
-
-            playerIDToGamesPlayed[playerID] += 1
-        else:
-            seenPlayers.add(playerID)
-            game_score = fantasy_points_from_game_stats(record)
-            playerIDToCumulativeScore[playerID] = game_score
-
-            playerIDToGamesPlayed[playerID] = 1
-
-
-    for player in playerIDToCumulativeScore:
-        games_played = playerIDToGamesPlayed[player]
-        cumulative_score = playerIDToCumulativeScore[player]
-        per_game_score = round(cumulative_score / games_played, 1)
-        playerIDToCumulativeScore[player] = per_game_score
-
-    number_players = int(number_players)
-    if number_players >= len(playerIDToCumulativeScore):
-        highest_scores = nlargest(len(playerIDToCumulativeScore), playerIDToCumulativeScore, key = playerIDToCumulativeScore.get)
-    else:
-        highest_scores = nlargest(number_players, playerIDToCumulativeScore, key = playerIDToCumulativeScore.get)
-
-    return_dictionary = dict()
-
-    for player_id in highest_scores:
-        player_name = player_name_from_player_id(player_id)
-        return_dictionary[player_name] = playerIDToCumulativeScore.get(player_id)
-
-
-    if record is None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        code = 400
-        msg = "leaders could not be found for year {}".format(year)
-        return msg, code
-
-
-    cursor.close()
-    conn.commit()
-    conn.close()
-
-    return return_dictionary
-
-def iter_row(cursor, size=100):
-    while True:
-        rows = cursor.fetchmany(size)
-        if not rows:
-            break
-        for row in rows:
-            yield row
+    return api_leaders(year, number_players, position)
 
 def add_weekly_game_stats_to_database(filename, year, opponentSideOfBall):
     stats = {
@@ -348,167 +257,6 @@ def add_team_stats_to_database(seasonValues, year, position):
     cursor.close()
     conn.commit()
     conn.close()
-
-def player_id_from_name(player_name):
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = "SELECT playerID FROM player WHERE playerName = (\'{}\');".format(player_name)
-
-    cursor.execute(statement)
-    row = cursor.fetchone()
-    if row == None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return 0
-    else:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return row[0]
-
-def player_name_from_player_id(player_id):
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = "SELECT playerName FROM player WHERE playerID = (\'{}\');".format(player_id)
-
-    cursor.execute(statement)
-    row = cursor.fetchone()
-    if row == None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return 0
-    else:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return row[0]
-
-def opponent_id_for_game(abbreviation, year, opponentPosition):
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = "SELECT teamID FROM team WHERE abbreviation = \'{}\' AND position = \'{}\' AND season = {};".format(abbreviation, opponentPosition, year)
-
-    cursor.execute(statement)
-    row = cursor.fetchone()
-    if row == None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return 0
-    else:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        print(row[0])
-        return row[0]
-
-def add_team_stats_for_year(filename, year, position):
-    try:
-        input_file = open(filename, 'r')
-        for line in input_file:
-            teamDict = {}
-            split_stats = line.split(',')
-            try:
-                team_rank = int(split_stats[0])
-                if 0 <= team_rank and team_rank <= 32:
-                    #print(split_stats[0])
-
-                    teamDict['rushing_yards'] = int(split_stats[18])
-                    teamDict['passing_yards'] = int(split_stats[12])
-                    teamDict['passing_scores'] = int(split_stats[13])
-                    teamDict['rushing_scores'] = int(split_stats[19])
-                    teamDict['fumbles'] = int(split_stats[8])
-                    teamDict['interceptions'] = int(split_stats[14])
-                    full_name = split_stats[1]
-                    abbreviation = abbreviation_dictionary[full_name]
-                    print(abbreviation)
-                    teamDict['abbreviation'] = abbreviation
-
-
-
-                    for i in teamDict:
-                        print (i)
-                        print(teamDict[i])
-
-                    add_team_stats_to_database(teamDict, year, position)
-            except ValueError:
-                pass
-        input_file.close()
-    except FileNotFoundError:
-        print("please enter a valid team data file")
-
-def fantasy_points_from_game_stats(game):
-
-    passing_yards = game[1]
-    rusing_yards = game[2]
-    receiving_yards = game[3]
-    receptions = game[4]
-    rushing_scores = game[7]
-    passing_scores = game[8]
-    receiving_scores = game[9]
-    fumbles_lost = game[10]
-    interceptions_thrown = game[11]
-    special_teams_scores = game[12]
-
-    fantasy_points = 0.0
-
-    fantasy_points += (passing_yards * .04)
-    fantasy_points += (rusing_yards * .1)
-    fantasy_points += (receiving_yards * .1)
-    fantasy_points += (receptions * 1)
-    fantasy_points += (rushing_scores * 6)
-    fantasy_points += (passing_scores * 4)
-    fantasy_points += (receiving_scores * 6)
-    fantasy_points -= (fumbles_lost * 2)
-    fantasy_points -= (interceptions_thrown * 2)
-    fantasy_points += (special_teams_scores * 6)
-
-    return fantasy_points
-
-def fantasy_points_from_game_skill_player(gameID):
-    conn = mysql.connect()
-    cursor = conn.cursor()
-    statement = "SELECT * FROM game WHERE gameID = \'{}\';".format(gameID)
-    cursor.execute(statement)
-
-    row = cursor.fetchone()
-
-    if row == None:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        return -100
-    else:
-        cursor.close()
-        conn.commit()
-        conn.close()
-        passing_yards = row[1]
-        rusing_yards = row[2]
-        receiving_yards = row[3]
-        receptions = row[4]
-        rushing_scores = row[7]
-        passing_scores = row[8]
-        receiving_scores = row[9]
-        fumbles_lost = row[10]
-        interceptions_thrown = row[11]
-        special_teams_scores = row[12]
-
-        fantasy_points = 0.0
-
-        fantasy_points += (passing_yards * .04)
-        fantasy_points += (rusing_yards * .1)
-        fantasy_points += (receiving_yards * .1)
-        fantasy_points += (receptions * 1)
-        fantasy_points += (rushing_scores * 6)
-        fantasy_points += (passing_scores * 4)
-        fantasy_points += (receiving_scores * 6)
-        fantasy_points -= (fumbles_lost * 2)
-        fantasy_points -= (interceptions_thrown * 2)
-        fantasy_points += (special_teams_scores * 6)
-
-        return fantasy_points
 
 if __name__ == "__main__":
     app.run()
