@@ -7,10 +7,15 @@
 ## Requirments:
     pandas
     numpy
-    sklearn
-    sqlalchemy
+    scikit-learn
+    SQLAlchemy
+    PyMySQL
+    mysql
     Keras
+    tensorflow
     matplotlib
+    h5py
+    seaborn
     
 ## Notes:
     [10/17/2019]
@@ -84,5 +89,20 @@
             Next:
                 - Models and graphs
     
+    [11/21/2019]
+            LSTM and data formatting pretty much complete, just need to tweak and train now.
+            
+            Commits:
+                - Added functions to denormalize output from model and to fetch the latest 'x'
+                  weeks for players by their playerID.
+                - Preliminary Keras sequential model with LSTM and Dense layers.
+                - Training protocol to run through all players in the DB, currently set to
+                  make sequences of 10 weeks which means it has to ignore some players.
+                - Prliminary graph printouts of model training
+                
+            Next:
+                - Functions for displaying nice graphs of player stats + predicitons and 
+                  player clustering.
+                - Continue to tweak model.
     
     
