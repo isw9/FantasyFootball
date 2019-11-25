@@ -37,7 +37,7 @@ def api_player_projection(year, week, player):
     name = row[2]
     projection = {
         "name": row[2],
-        "projected points": 10.0,
+        "projected fantasy points": 10.0,
         "projected passing yards": 200,
         "projected rushing yards": 20,
         "projected recieving yards": 0,
@@ -51,9 +51,7 @@ def api_player_projection(year, week, player):
     return projection
 
 def api_leaders(year, number_players, position):
-    year = request.args.get('year')
-    number_players = request.args.get('number_players')
-    position = request.args.get('position').upper()
+    position = position.upper()
 
     valid_positions = {'WR', 'QB', 'RB', 'TE'}
 

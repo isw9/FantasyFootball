@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h2> Projected Player Stats for {{name}} for week {{week}} in {{year}}</h2>
+
+  <ul>
+    {% for stat in stats %}
+      <li>{{ stat }} : {{stats[stat]}}</li>
+    {% endfor %}
+  </ul>
+
+{% endblock %}

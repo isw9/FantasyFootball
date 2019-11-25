@@ -1,0 +1,17 @@
+<html>
+    <head>
+      {% if title %}
+      <title>{{ title }} - Microblog</title>
+      {% else %}
+      <title>Welcome to Microblog</title>
+      {% endif %}
+    </head>
+    <body>
+        <div>Fantasy Football:
+          <a href="/leaders">Leaders</a>
+          <a href="/playerProjection">Player Projection</a>
+          <a href="/playerComparison">Player Comparison</a></div>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>

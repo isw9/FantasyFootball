@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1> Player Comparison </h1>
+  <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.playerNameOne.label }}<br>
+        {{ form.playerNameOne(size=32) }}
+        {% for error in form.playerNameOne.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.playerNameTwo.label }}<br>
+        {{ form.playerNameTwo(size=32) }}
+        {% for error in form.playerNameTwo.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.season.label }}<br>
+        {{ form.season(size=1) }}
+        {% for error in form.season.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.week.label }}<br>
+        {{ form.week(size=1) }}
+        {% for error in form.week.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h2> Top Quarterbacks</h2>
+  <ol type = "1">
+    {% for player in qbs %}
+      <li>{{player}} - {{qbs[player]}}</li>
+    {% endfor %}
+  </ol>
+
+    <h2> Top Running Backs</h2>
+    <ol type = "1">
+      {% for player in rbs %}
+        <li>{{player}} - {{rbs[player]}}</li>
+      {% endfor %}
+    </ol>
+
+    <h2> Top Wide Receivers</h2>
+    <ol type = "1">
+      {% for player in wrs %}
+        <li>{{player}} - {{wrs[player]}}</li>
+      {% endfor %}
+    </ol>
+
+    <h2> Top Tight Ends</h2>
+    <ol type = "1">
+      {% for player in tes %}
+        <li>{{player}} - {{tes[player]}}</li>
+      {% endfor %}
+    </ol>
+
+
+{% endblock %}
