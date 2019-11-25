@@ -3,9 +3,13 @@ from flaskext.mysql import MySQL
 import nflgame
 from flask import request
 from heapq import nlargest
+from flask import render_template, redirect
 from controllers import *
+from forms import *
+from config import Config
 
 app = Flask(__name__)
+app.config.from_object(Config)
 mysql = MySQL(app)
 
 app.config['MYSQL_DATABASE_USER'] = 'secret'
@@ -64,17 +68,39 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Washington Redskins': 'WAS'}
 
 
-@app.route("/")
-def main():
-    return "this will be the home page that shows the leaders for each position"
+@app.route("/leaders")
+def index():
+    wrs = api_leaders(2018, 10, 'wr')
+    rbs = api_leaders(2018, 10, 'rb')
+    tes = api_leaders(2018, 10, 'te')
+    qbs = api_leaders(2018, 10, 'qb')
+    return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes, qbs=qbs)
 
-@app.route('/playerProjection')
+@app.route('/playerProjection', methods = ['GET', 'POST'])
 def weeklyStart():
-    return "this is the page that shows a weekly projection for a given week and year"
+    form = PlayerProjectionForm()
+    if form.validate_on_submit():
+        name = form.playerName.data
+        season = form.season.data
+        week = form.week.data
+        stats = api_player_projection(season, week, name)
+        return render_template('playerProjectionData.html', title='playerProjectionData', stats=stats,name=name, year=season, week=week)
+    return render_template('playerProjection.html', title='playerProjection', form=form)
 
-@app.route('/comparison')
+@app.route('/playerComparison', methods = ['GET', 'POST'])
 def comparison():
-    return "this will be the page used to compare two players for a given week"
+    form = PlayerComparisonForm()
+    if form.validate_on_submit():
+        nameOne = form.playerNameOne.data
+        nameTwo = form.playerNameTwo.data
+        season = form.season.data
+        week = form.week.data
+        statsFirstPlayer = api_player_projection(season, week, nameOne)
+        statsSecondPlayer = api_player_projection(season, week, nameTwo)
+        return render_template('playerComparisonData.html', title='playerProjectionData',
+                                statsFirstPlayer=statsFirstPlayer, statsSecondPlayer=statsSecondPlayer,
+                                nameOne=nameOne, nameTwo=nameTwo, year=season, week=week)
+    return render_template('playerComparison.html', title='playerProjection', form=form)
 
 @app.route('/api/playerProjection', methods = ['GET'])
 def player():
