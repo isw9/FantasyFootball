@@ -25,15 +25,17 @@ def save_model(model, name):
     print(CH + "Model Saved!")
 
 def load_model(model_name):
-    json_file = open(model_name, 'r')
+    json_file = open(model_name+".json", 'r')
     model_json = json_file.read()
     json_file.close()
     model = model_from_json(model_json)
-    model.load_weights("model.h5")
+    model.load_weights(model_name+".h5")
     print(CH + "Loaded model ~" + model_name + "~")
     return model
 
 if __name__ == "__main__":
+    model = load_model("testModel")
+
     print(CH + "Connecting to database. . .")
     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
     print(CH + " u: " + u)
@@ -44,6 +46,16 @@ if __name__ == "__main__":
     # DB Setup
     dB = DataBuilder(u, p, db, h)
     dB.db_get_minmax()
+
+    Test = dB.get_player_stats_Latest(666, 11).drop([0])
+    Test = dB.df_wiggle_norm(Test, 0.05)
+    Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
+    predict = model.predict(Test)
+    print(predict)
+    predict = dB.denormalize_prediction(predict, 0.05)
+    print(predict)
+
+    """
     top_players = ["600", "547", "537", "521", "559", "595", "561", "574", "568", "585"]
     ban = []
     model = Sequential()
@@ -54,8 +66,8 @@ if __name__ == "__main__":
     model.add(Dense(units=13, activation="softmax"))
     model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001), metrics=['accuracy'])
 
-    #pIDrange = range(517, 1999)
-    pIDrange = range(517, 550)
+    pIDrange = range(517, 1999)
+    #pIDrange = range(517, 550)
 
     for player in pIDrange:
         try:
@@ -87,6 +99,9 @@ if __name__ == "__main__":
     print(predict)
     predict = dB.denormalize_prediction(predict, 0.05)
     print(predict)
+
+    save_model(model, "testModel")
+    """
 
 
 

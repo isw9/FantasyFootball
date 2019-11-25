@@ -7,11 +7,15 @@
 ## Requirments:
     pandas
     numpy
-    sklearn
-    sqlalchemy
+    scikit-learn
+    SQLAlchemy
+    PyMySQL
+    mysql
     Keras
+    tensorflow
     matplotlib
     h5py
+    seaborn
     
 ## Notes:
     [10/17/2019]

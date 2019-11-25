@@ -147,7 +147,6 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[False, False, False], inplace=True)
         return P_df.reset_index(drop=True)
 
-
     def df_add_0Weeks(self, df):
         l_week = int(df.iloc[0]['weekNumber']) ; l_season = int(df.iloc[0]['season'])
         zero_stats = np.zeros(18)
@@ -206,8 +205,44 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
             Y_train = Y[0: int(len(Y) * train_percentage)] ; Y_test = Y[int(len(Y) * train_percentage):]
             return X_train, Y_train, X_test, Y_test
 
+    def get_top10_players(self, position, season, FS = False):
+        info = "season"
 
-if __name__ == "__main__":  # DB Connection Test
+        # Get all playerID's for position
+        pos_playerIDs_query = "Select distinct fantasyfootball.player.playerID "\
+                              "from fantasyfootball.game, fantasyfootball.player "\
+                              "where position = \""+position+"\" and season = " + str(season)+ " "\
+                              "and fantasyfootball.game.playerID = fantasyfootball.player.playerID"
+        pos_playerIDs = self.query_to_df(pos_playerIDs_query).values
+
+        # Get average stats values for player by season
+        if not FS:
+            stats_avg = " AVG(passingYards), AVG(rushingYards), AVG(receivingYards), AVG(receptions), " \
+                        " AVG(rushingScores), AVG(passingScores), AVG(receivingScores), AVG(fumblesLost), " \
+                        "AVG(interceptionsThrown),  "
+        else:
+            stats_avg = " AVG(passingYards)*0.04, AVG(rushingYards)*0.1, AVG(receivingYards)*0.1, AVG(receptions), " \
+                        " AVG(rushingScores)*6, AVG(passingScores)*4, AVG(receivingScores)*6, AVG(fumblesLost)*2, " \
+                        "AVG(interceptionsThrown)*2,  "
+
+        avg_fantasyscore = " AVG(passingYards)*0.04 + AVG(rushingYards)*0.1 + AVG(receivingYards)*0.1 + AVG(receptions) +" \
+                           " AVG(rushingScores)*6 + AVG(passingScores)*4 + AVG(receivingScores)*6 - AVG(fumblesLost)*2 -" \
+                           " AVG(interceptionsThrown)*2 as FSAvg "
+
+        avgs_df = pd.DataFrame()
+
+        for i in range(0, len(pos_playerIDs-1)):
+            player_season_avg_query = "Select playerID," + stats_avg + avg_fantasyscore + " from fantasyfootball.game where playerID=" \
+                                      + str(pos_playerIDs[i][0]) + " and season=" + str(season)
+            playerID_avg = self.query_to_df(player_season_avg_query)
+            avgs_df = pd.concat((avgs_df, playerID_avg))
+
+        avgs_df.sort_values(["FSAvg"], ascending=[False], inplace=True)
+
+        return avgs_df[0:10].sort_values(["FSAvg"], ascending=[True])
+
+
+if __name__ == "__main__":
 
     u = sys.argv[1] ; p = sys.argv[2] ; db = sys.argv[3] ; h = sys.argv[4]
     print(CH+" u: " + u)
@@ -216,7 +251,7 @@ if __name__ == "__main__":  # DB Connection Test
     print(CH+" h: " + h)
 
     dB = DataBuilder(u, p, db, h)
-    print(dB.get_player_stats_Latest(666, 1).values)
+    dB.get_top10_players("QB",2018)
 
 
 
