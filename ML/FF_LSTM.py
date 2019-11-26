@@ -12,7 +12,7 @@ from keras.layers import Dropout
 from keras.models import model_from_json
 from keras.activations import softmax
 from keras.optimizers import SGD
-from DataBuilder import DataBuilder
+from ML.DataBuilder import DataBuilder
 
 CH = "[FF_LSTM] "
 path = os.path.abspath(__file__)
@@ -110,9 +110,6 @@ if __name__ == "__main__":
     # predict and compare to truth
     predict_and_compare(model, test_df, 0.05)
 
-
-
-
     """
     top_players = ["600", "547", "537", "521", "559", "595", "561", "574", "568", "585"]
     ban = []
@@ -160,11 +157,3 @@ if __name__ == "__main__":
 
     save_model(model, "testModel")
     """
-
-
-
-
-
-
-
-
