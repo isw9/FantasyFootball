@@ -12,7 +12,7 @@ from keras.layers import Dropout
 from keras.models import model_from_json
 from keras.activations import softmax
 from keras.optimizers import SGD
-from DataBuilder import DataBuilder
+from ML.DataBuilder import DataBuilder
 
 CH = "[FF_LSTM] "
 path = os.path.abspath(__file__)
@@ -33,27 +33,27 @@ def load_model(model_name):
     print(CH + "Loaded model ~" + model_name + "~")
     return model
 
-if __name__ == "__main__":
-    model = load_model("testModel")
-
-    print(CH + "Connecting to database. . .")
-    u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
-    print(CH + " u: " + u)
-    print(CH + " p: " + p)
-    print(CH + "db: " + db)
-    print(CH + " h: " + h)
-
-    # DB Setup
-    dB = DataBuilder(u, p, db, h)
-    dB.db_get_minmax()
-
-    Test = dB.get_player_stats_Latest(666, 11).drop([0])
-    Test = dB.df_wiggle_norm(Test, 0.05)
-    Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
-    predict = model.predict(Test)
-    print(predict)
-    predict = dB.denormalize_prediction(predict, 0.05)
-    print(predict)
+# if __name__ == "__main__":
+#     model = load_model("testModel")
+#
+#     print(CH + "Connecting to database. . .")
+#     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
+#     print(CH + " u: " + u)
+#     print(CH + " p: " + p)
+#     print(CH + "db: " + db)
+#     print(CH + " h: " + h)
+#
+#     # DB Setup
+#     dB = DataBuilder(u, p, db, h)
+#     dB.db_get_minmax()
+#
+#     Test = dB.get_player_stats_Latest(666, 11).drop([0])
+#     Test = dB.df_wiggle_norm(Test, 0.05)
+#     Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
+#     predict = model.predict(Test)
+#     print(predict)
+#     predict = dB.denormalize_prediction(predict, 0.05)
+#     print(predict)
 
     """
     top_players = ["600", "547", "537", "521", "559", "595", "561", "574", "568", "585"]
@@ -102,11 +102,3 @@ if __name__ == "__main__":
 
     save_model(model, "testModel")
     """
-
-
-
-
-
-
-
-

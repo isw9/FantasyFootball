@@ -3,6 +3,7 @@ from flaskext.mysql import MySQL
 from flask import Flask
 from heapq import nlargest
 from util import *
+from ML.FF_LSTM import *
 
 app = Flask(__name__)
 mysql = MySQL(app)
@@ -29,12 +30,37 @@ def api_player_projection(year, week, player):
         msg = " player with name {} could not be found;".format(player)
         return msg, code
 
-
     cursor.close()
     conn.commit()
     conn.close()
 
     name = row[2]
+    playerID = row[0]
+    print(row)
+
+
+    u = 'secret'
+    p = 'secret'
+    db = 'secret'
+    h = 'secret'
+
+
+    model = load_model("ML/testModel")
+    dB = DataBuilder(u, p, db, h)
+    dB.db_get_minmax()
+
+    Test = dB.get_player_stats_Latest(666, 11).drop([0])
+    Test = dB.df_wiggle_norm(Test, 0.05)
+    Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
+    predict = model.predict(Test)
+    print(predict)
+    predict = dB.denormalize_prediction(predict, 0.05)
+    print(predict)
+
+
+
+
+
     projection = {
         "name": row[2],
         "projected fantasy points": 10.0,
