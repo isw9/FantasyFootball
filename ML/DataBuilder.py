@@ -141,10 +141,10 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        orderBy = " ORDER BY season DESC, weekNumber DESC, gameID DESC"
+        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
         query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + orderBy + " LIMIT " + str(limit) + ""
         P_df = self.query_to_df(query)
-        P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[False, False, False], inplace=True)
+        P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
         return P_df.reset_index(drop=True)
 
     def df_add_0Weeks(self, df):
@@ -241,9 +241,20 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
 
         return avgs_df[0:10].sort_values(["FSAvg"], ascending=[True])
 
+    def get_Xweeks_from(self, playerID, X,  season, week):
+        info = "gameID, season, weekNumber, opponentTeamID, ageDuringGame"
+        stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
+                "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
+                "interceptionsThrown, passingCompletions, passingAttempts"
+        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
+        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) \
+                + " and season >= " + str(season) + " and weekNumber >= "+str(week) + orderBy + " LIMIT " + str(X) + ""
+        P_df = self.query_to_df(query)
+        P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
+        return P_df.reset_index(drop=True)
+
 
 if __name__ == "__main__":
-
     u = sys.argv[1] ; p = sys.argv[2] ; db = sys.argv[3] ; h = sys.argv[4]
     print(CH+" u: " + u)
     print(CH+" p: " + p)
@@ -251,7 +262,7 @@ if __name__ == "__main__":
     print(CH+" h: " + h)
 
     dB = DataBuilder(u, p, db, h)
-    dB.get_top10_players("QB",2018)
+    print(dB.get_Xweeks_from(666, 11, 2016, 4))
 
 
 
