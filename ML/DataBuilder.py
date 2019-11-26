@@ -141,7 +141,7 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
+        orderBy = " ORDER BY season DESC, weekNumber DESC, gameID DESC"
         query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) + orderBy + " LIMIT " + str(limit) + ""
         P_df = self.query_to_df(query)
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
@@ -181,7 +181,7 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         # Output [stats]
         # Return X_train, X_test, Y_train, Y_test
 
-        df.drop(columns=["gameID"], inplace=True)
+        df.drop(columns=["gameID", "season", "weekNumber"], inplace=True)
         n_rows = len(df)
         n_cols = len(df.columns)
 
@@ -193,7 +193,7 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
             # X = data.reshape(int(n_rows/time_steps), time_steps, n_cols)
 
         else:   # Expand series by "sliding" across data rather than stepping, basically numpy shift
-            Y = df.drop(columns=["season", "weekNumber", "opponentTeamID", "ageDuringGame"])[time_steps:].values
+            Y = df.drop(columns=["opponentTeamID", "ageDuringGame"])[time_steps:].values
             X = np.zeros(((n_rows - 1 - time_steps + 1) * time_steps, n_cols))
             in_data = df.values[0 : n_rows - 1]
 
@@ -262,8 +262,8 @@ if __name__ == "__main__":
     print(CH+" h: " + h)
 
     dB = DataBuilder(u, p, db, h)
-    print(dB.get_Xweeks_from(666, 11, 2016, 4))
 
+    print(dB.get_player_stats_Latest(666,11))
 
 
 

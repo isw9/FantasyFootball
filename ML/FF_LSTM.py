@@ -9,9 +9,12 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Dropout
+from keras.layers import TimeDistributed
 from keras.models import model_from_json
 from keras.activations import softmax
 from keras.optimizers import SGD
+from keras.optimizers import rmsprop
+from keras.optimizers import adam
 from DataBuilder import DataBuilder
 
 CH = "[FF_LSTM] "
@@ -21,29 +24,34 @@ path = os.path.abspath(__file__)
 def save_model(model, name):
     model_json = model.to_json()
     with open(name + ".json", "w") as json_file:
-        json_file.write(model_json)
-    model.save_weights(name+".h5")
+        json_file.write("Models/"+model_json)
+    model.save_weights("Models/"+name+".h5")
     print(CH + "Model Saved!")
 
 
 def load_model(model_name):
-    json_file = open(model_name+".json", 'r')
+    json_file = open("Models/"+model_name+".json", 'r')
     model_json = json_file.read()
     json_file.close()
     model = model_from_json(model_json)
-    model.load_weights(model_name+".h5")
+    model.load_weights("Models/"+model_name+".h5")
     print(CH + "Loaded model ~" + model_name + "~")
     return model
 
-def train_model(dB):
+
+def train_model(dB, name):
     ban = []
     model = Sequential()
-    model.add(LSTM(50, input_shape=(10, 17), return_sequences=True))
-    #model.add(Dropout(0.1))
-    #model.add(LSTM(25, return_sequences=False))
+    model.add(LSTM(50, input_shape=(10, 15), return_sequences=True))
+    model.add(Dropout(0.1))
+    model.add(LSTM(50, input_shape=(10, 15), return_sequences=True))
+    model.add(Dropout(0.1))
+    model.add(LSTM(50, input_shape=(10, 15), return_sequences=True))
+    model.add(Dropout(0.1))
+    model.add(LSTM(50, input_shape=(10, 15), return_sequences=False))
     model.add(Dropout(0.1))
     model.add(Dense(units=13, activation="softmax"))
-    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001), metrics=['accuracy'])
+    model.compile(loss='mse', optimizer="rmsprop", metrics=['accuracy'])
 
     pIDrange = range(517, 1999)
 
@@ -59,23 +67,34 @@ def train_model(dB):
         except:
             ban.append(player)
             print("FAIL")
-            print(player)
-            print(ban)
+            #print(player)
+            #print(ban)
 
     plt.plot(history.history['accuracy'], label='acc')
     plt.plot(history.history['loss'], label='loss')
     plt.plot(history.history['val_accuracy'], label='val_acc')
     plt.plot(history.history['val_loss'], label='val_loss')
     plt.legend()
-    plt.savefig("Plots/model_log.png")
+    plt.savefig("Plots/"+name+"_log.png")
     plt.close()
     return model
 
 
+def influence_model(model, playerID, wiggle_norm):
+
+    model.compile(loss='mse', optimizer="rmsprop", metrics=['accuracy'])
+    for i in range(0, 20):
+        train_df = dB.get_player_stats(playerID)
+        train_df = dB.df_wiggle_norm(train_df, wiggle_norm)
+        test_df = dB.get_player_stats_Latest(666, 11)
+        trainX, trainY, testX, testY = dB.build_series_set(train_df, 10, .7, slide=True)
+        model.fit(trainX, trainY, epochs=50, validation_data=(testX, testY), verbose=0, shuffle=False)
+        predict_and_compare(model, test_df, wiggle_norm)
+
 
 def predict_and_compare(model, input_df, wiggle_norm):
     truth = input_df.iloc[10:].drop(columns=["gameID", "season", "weekNumber", "opponentTeamID", "ageDuringGame"])
-    data = dB.df_wiggle_norm(input_df.iloc[0:10], 0.05).drop(columns=["gameID"]).iloc[0:10].values.reshape(1, 10, 17)
+    data = dB.df_wiggle_norm(input_df.iloc[0:10], 0.05).drop(columns=["gameID", "season", "weekNumber"]).iloc[0:10].values.reshape(1, 10, 15)
 
     predict = model.predict(data)
     predict = dB.denormalize_prediction(predict, wiggle_norm)
@@ -88,9 +107,6 @@ def predict_and_compare(model, input_df, wiggle_norm):
 
 
 if __name__ == "__main__":
-    # Load model:
-    model = load_model("testModel")
-
     # DB setup:
     print(CH + "Connecting to database. . .")
     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
@@ -101,15 +117,21 @@ if __name__ == "__main__":
     dB = DataBuilder(u, p, db, h)
     dB.db_get_minmax()
 
-    train_model(dB)
+    name = "4by50_full"
+    model = train_model(dB, name)
 
-    # Get set of weeks to test:
-    test_df = dB.get_Xweeks_from(521, 11, 2015, 4)
-    print(test_df)
-    print(test_df.iloc[10:])
-    # predict and compare to truth
-    predict_and_compare(model, test_df, 0.05)
+    #model = load_model("testModel")
+    #influence_model(model, 666, 0.05)
 
+    #model = train_model(dB)
+    #test_df = dB.get_player_stats_Latest(666, 11)
+    #predict_and_compare(model, test_df, 0.05)
+
+
+    #save_model(model, name)
+
+
+    #save_model(model, "testModel2")
 
 
 
