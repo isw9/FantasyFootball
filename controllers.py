@@ -46,20 +46,21 @@ def api_player_projection(year, week, player):
 
 
     model = load_model("ML/testModel")
-    dB = DataBuilder(u, p, db, h)
-    dB.db_get_minmax()
 
-    Test = dB.get_player_stats_Latest(666, 11).drop([0])
-    Test = dB.df_wiggle_norm(Test, 0.05)
-    Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
-    predict = model.predict(Test)
-    print(predict)
-    predict = dB.denormalize_prediction(predict, 0.05)
-    print(predict)
+    # michael pick up here
+    # need something like
+    # predicted_dictionary = prediction(playerID, week, year)
 
-
-
-
+#     dB = DataBuilder(u, p, db, h)
+#     dB.db_get_minmax()
+#
+#     test_df = dB.get_Xweeks_from(playerID, 11, year, week)
+# #     # Get set of weeks to test:
+# #     test_df = dB.get_Xweeks_from(521, 11, 2015, 4)
+# #     print(test_df)
+# #     print(test_df.iloc[10:])
+# #     predict and compare to truth
+#     predict_and_compare(model, test_df, 0.05, dB)
 
     projection = {
         "name": row[2],
