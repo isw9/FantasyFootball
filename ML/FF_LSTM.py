@@ -17,12 +17,14 @@ from DataBuilder import DataBuilder
 CH = "[FF_LSTM] "
 path = os.path.abspath(__file__)
 
+
 def save_model(model, name):
     model_json = model.to_json()
     with open(name + ".json", "w") as json_file:
         json_file.write(model_json)
     model.save_weights(name+".h5")
     print(CH + "Model Saved!")
+
 
 def load_model(model_name):
     json_file = open(model_name+".json", 'r')
@@ -33,30 +35,28 @@ def load_model(model_name):
     print(CH + "Loaded model ~" + model_name + "~")
     return model
 
-def train_model(dB):	# need this class to not have a main in order to use its methods
-    ban = []	# if __name__ == "__main__":
-    model = Sequential()	#     model = load_model("testModel")
-    model.add(LSTM(50, input_shape=(10, 17), return_sequences=True))	#
-    #model.add(Dropout(0.1))	#     print(CH + "Connecting to database. . .")
-    #model.add(LSTM(25, return_sequences=False))	#     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
-    model.add(Dropout(0.1))	#     print(CH + " u: " + u)
-    model.add(Dense(units=13, activation="softmax"))	#     print(CH + " p: " + p)
-    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001), metrics=['accuracy'])	#     print(CH + "db: " + db)
+def train_model(dB):
+    ban = []
+    model = Sequential()
+    model.add(LSTM(50, input_shape=(10, 17), return_sequences=True))
+    #model.add(Dropout(0.1))
+    #model.add(LSTM(25, return_sequences=False))
+    model.add(Dropout(0.1))
+    model.add(Dense(units=13, activation="softmax"))
+    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001), metrics=['accuracy'])
 
-#     print(CH + " h: " + h)
-    pIDrange = range(517, 1999)	#
+    pIDrange = range(517, 1999)
 
-#     # DB Setup
-    for player in pIDrange:	#     dB = DataBuilder(u, p, db, h)
-        try:	#     dB.db_get_minmax()
-            if not player in ban:	#
-                print("! " + str(player) + " !")	#     Test = dB.get_player_stats_Latest(666, 11).drop([0])
-                df = dB.get_player_stats(int(player))	#     Test = dB.df_wiggle_norm(Test, 0.05)
-                # df = dB.df_add_0Weeks(df)	#     Test = Test.drop(columns=["gameID"]).values.reshape(1, 10, 17)
-                df = dB.df_wiggle_norm(df, 0.05)	#     predict = model.predict(Test)
-                trainX, trainY, testX, testY = dB.build_series_set(df, 10, .7, slide=True)	#     print(predict)
-                history = model.fit(trainX, trainY, epochs=50, validation_data=(testX, testY), verbose=2, shuffle=False)	#     predict = dB.denormalize_prediction(predict, 0.05)
-        except:	#     print(predict)
+    for player in pIDrange:
+        try:
+            if not player in ban:
+                print("! " + str(player) + " !")
+                df = dB.get_player_stats(int(player))
+                # df = dB.df_add_0Weeks(df)
+                df = dB.df_wiggle_norm(df, 0.05)
+                trainX, trainY, testX, testY = dB.build_series_set(df, 10, .7, slide=True)
+                history = model.fit(trainX, trainY, epochs=50, validation_data=(testX, testY), verbose=2, shuffle=False)
+        except:
             ban.append(player)
             print("FAIL")
             print(player)
@@ -86,29 +86,32 @@ def predict_and_compare(model, input_df, wiggle_norm):
     print("~ Truth")
     print(truth)
 
-# need this class to not have a main in order to use its methods
-# if __name__ == "__main__":
-#     # Load model:
-#     model = load_model("testModel")
-#
-#     # DB setup:
-#     print(CH + "Connecting to database. . .")
-#     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
-#     print(CH + " u: " + u)
-#     print(CH + " p: " + p)
-#     print(CH + "db: " + db)
-#     print(CH + " h: " + h)
-#     dB = DataBuilder(u, p, db, h)
-#     dB.db_get_minmax()
-#
-#     train_model(dB)
-#
-#     # Get set of weeks to test:
-#     test_df = dB.get_Xweeks_from(521, 11, 2015, 4)
-#     print(test_df)
-#     print(test_df.iloc[10:])
-#     # predict and compare to truth
-#     predict_and_compare(model, test_df, 0.05)
+
+if __name__ == "__main__":
+    # Load model:
+    model = load_model("testModel")
+
+    # DB setup:
+    print(CH + "Connecting to database. . .")
+    u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
+    print(CH + " u: " + u)
+    print(CH + " p: " + p)
+    print(CH + "db: " + db)
+    print(CH + " h: " + h)
+    dB = DataBuilder(u, p, db, h)
+    dB.db_get_minmax()
+
+    train_model(dB)
+
+    # Get set of weeks to test:
+    test_df = dB.get_Xweeks_from(521, 11, 2015, 4)
+    print(test_df)
+    print(test_df.iloc[10:])
+    # predict and compare to truth
+    predict_and_compare(model, test_df, 0.05)
+
+
+
 
     """
     top_players = ["600", "547", "537", "521", "559", "595", "561", "574", "568", "585"]
@@ -157,3 +160,11 @@ def predict_and_compare(model, input_df, wiggle_norm):
 
     save_model(model, "testModel")
     """
+
+
+
+
+
+
+
+
