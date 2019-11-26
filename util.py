@@ -1,15 +1,12 @@
 from flask import Blueprint, jsonify, request
 from flaskext.mysql import MySQL
 from flask import Flask
+from config import Config
 from util import *
 
 app = Flask(__name__)
+app.config.from_object(Config)
 mysql = MySQL(app)
-
-app.config['MYSQL_DATABASE_USER'] = 'secret'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'secret'
-app.config['MYSQL_DATABASE_DB'] = 'secret'
-app.config['MYSQL_DATABASE_HOST'] = 'secret'
 
 offensive_players = set()
 bad_abbreviation_set = {'TAM', 'GNB', 'NOR', 'KAN', 'NWE', 'SFO', 'STL', 'SDG'}

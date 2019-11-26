@@ -11,13 +11,22 @@ from util import *
 app = Flask(__name__)
 app.config.from_object(Config)
 
-@app.route("/leaders")
+@app.route("/leaders", methods = ['GET', 'POST'])
 def index():
-    wrs = api_leaders(2018, 10, 'wr')
-    rbs = api_leaders(2018, 10, 'rb')
-    tes = api_leaders(2018, 10, 'te')
-    qbs = api_leaders(2018, 10, 'qb')
-    return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes, qbs=qbs)
+    form = LeadersForm()
+    if form.validate_on_submit():
+        season = form.season.data
+        number_results = form.numberResults.data
+        wrs = api_leaders(season, number_results, 'wr')
+        rbs = api_leaders(season, number_results, 'rb')
+        tes = api_leaders(season, number_results, 'te')
+        qbs = api_leaders(season, number_results, 'qb')
+    else:
+        wrs = api_leaders(2018, 10, 'wr')
+        rbs = api_leaders(2018, 10, 'rb')
+        tes = api_leaders(2018, 10, 'te')
+        qbs = api_leaders(2018, 10, 'qb')
+    return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes, qbs=qbs, form=form)
 
 @app.route('/playerProjection', methods = ['GET', 'POST'])
 def weeklyStart():

@@ -30,5 +30,23 @@
       {% endfor %}
     </ol>
 
+    <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <p>
+          {{ form.season.label }}<br>
+          {{ form.season(size=1) }}
+          {% for error in form.season.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>
+          {{ form.numberResults.label }}<br>
+          {{ form.numberResults(size=1) }}
+          {% for error in form.numberResults.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+          {% endfor %}
+      </p>
+      <p>{{ form.submit() }}</p>
+  </form>
 
 {% endblock %}

@@ -3,15 +3,12 @@ from flaskext.mysql import MySQL
 from flask import Flask
 from heapq import nlargest
 from util import *
-from ML.FF_LSTM import *
+from config import Config
+#from ML.FF_LSTM import *
 
 app = Flask(__name__)
+app.config.from_object(Config)
 mysql = MySQL(app)
-
-app.config['MYSQL_DATABASE_USER'] = 'secret'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'secret'
-app.config['MYSQL_DATABASE_DB'] = 'secret'
-app.config['MYSQL_DATABASE_HOST'] = 'secret'
 
 def api_player_projection(year, week, player):
     conn = mysql.connect()
@@ -39,13 +36,13 @@ def api_player_projection(year, week, player):
     print(row)
 
 
-    u = 'secret'
-    p = 'secret'
-    db = 'secret'
-    h = 'secret'
-
-
-    model = load_model("ML/testModel")
+    # u = 'secret'
+    # p = 'secret'
+    # db = 'secret'
+    # h = 'secret'
+    #
+    #
+    # model = load_model("ML/testModel")
 
     # michael pick up here
     # need something like
