@@ -33,7 +33,6 @@ def api_player_projection(year, week, player):
 
     name = row[2]
     playerID = row[0]
-    print(row)
 
 
     # u = 'secret'

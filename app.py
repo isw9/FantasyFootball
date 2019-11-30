@@ -14,15 +14,29 @@ app = Flask(__name__)
 app.config.from_object(Config)
 bootstrap = Bootstrap(app)
 
-@app.route("/")
+@app.route("/", methods = ['GET', 'POST'])
 def home():
     form = LeadersForm()
-    wrs = api_leaders(2018, 10, 'wr')
-    rbs = api_leaders(2018, 10, 'rb')
-    tes = api_leaders(2018, 10, 'te')
-    qbs = api_leaders(2018, 10, 'qb')
-    season = 2018
-    return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes, qbs=qbs, form=form, year=season)
+    if form.validate_on_submit():
+        season = form.season.data
+        number_results = form.numberResults.data
+        wrs = api_leaders(season, number_results, 'wr')
+        rbs = api_leaders(season, number_results, 'rb')
+        tes = api_leaders(season, number_results, 'te')
+        qbs = api_leaders(season, number_results, 'qb')
+    else:
+        wrs = api_leaders(2018, 10, 'wr')
+        rbs = api_leaders(2018, 10, 'rb')
+        tes = api_leaders(2018, 10, 'te')
+        qbs = api_leaders(2018, 10, 'qb')
+        season = 2018
+    wrs_table = leaders_table(wrs)
+    rbs_table = leaders_table(rbs)
+    tes_table = leaders_table(tes)
+    qbs_table = leaders_table(qbs)
+    return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes,
+                            qbs=qbs, form=form, year=season, wrs_table=wrs_table,
+                            rbs_table=rbs_table, tes_table=tes_table, qbs_table=qbs_table)
 @app.route("/leaders", methods = ['GET', 'POST'])
 def index():
     form = LeadersForm()

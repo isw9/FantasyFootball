@@ -97,7 +97,6 @@ def historic_fantasy_scores(season, week, player_name):
     cursor.close()
     conn.commit()
     conn.close()
-    print(return_dictionary)
     return return_dictionary
 
 def week_number_from_game_id(game_id):
@@ -188,7 +187,6 @@ def opponent_id_for_game(abbreviation, year, opponentPosition):
         cursor.close()
         conn.commit()
         conn.close()
-        print(row[0])
         return row[0]
 
 def add_team_stats_for_year(filename, year, position):
@@ -200,7 +198,6 @@ def add_team_stats_for_year(filename, year, position):
             try:
                 team_rank = int(split_stats[0])
                 if 0 <= team_rank and team_rank <= 32:
-                    #print(split_stats[0])
 
                     teamDict['rushing_yards'] = int(split_stats[18])
                     teamDict['passing_yards'] = int(split_stats[12])
@@ -210,14 +207,7 @@ def add_team_stats_for_year(filename, year, position):
                     teamDict['interceptions'] = int(split_stats[14])
                     full_name = split_stats[1]
                     abbreviation = abbreviation_dictionary[full_name]
-                    print(abbreviation)
                     teamDict['abbreviation'] = abbreviation
-
-
-
-                    for i in teamDict:
-                        print (i)
-                        print(teamDict[i])
 
                     add_team_stats_to_database(teamDict, year, position)
             except ValueError:
@@ -357,7 +347,6 @@ def add_weekly_game_stats_to_database(filename, year, opponentSideOfBall):
             stats['passingYards'] = int(split_player_stats[16])
             stats['rushingYards'] = int(split_player_stats[25])
             stats['receivingYards'] = int(split_player_stats[30])
-            print(split_player_stats[1])
 
             stats['receptions'] = int(split_player_stats[29])
             stats['receivingTargets'] = int(split_player_stats[28])
@@ -427,11 +416,8 @@ def add_players_to_database(filename, year):
             try:
                 if (split_line[1] != 'Player'):
                     player_name = split_line[1]
-                    print(split_line[1])
                     position = split_line[3]
                     age = int(split_line[4])
-                    print(position)
-
 
                     player_name = player_name.split('*', 1)[0]
                     player_name = player_name.split('+', 1)[0]
