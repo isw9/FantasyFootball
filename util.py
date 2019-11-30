@@ -1,8 +1,10 @@
 from flask import Blueprint, jsonify, request
 from flaskext.mysql import MySQL
 from flask import Flask
+from heapq import nlargest
 from config import Config
 from util import *
+from tables import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -57,6 +59,64 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Tennessee Titans': 'TEN',
 'Washington Redskins': 'WAS'}
 
+def leaders_table(stats):
+    items = []
+    for stat in stats:
+        if stat != 'name':
+            to_add = dict(name=stat, score=stats[stat])
+            items.append(to_add)
+    table = LeaderTable(items)
+    table.border = True
+    return table
+
+def historic_fantasy_scores(season, week, player_name):
+    player_id = player_id_from_name(player_name)
+
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {} AND weekNumber < {};".format(player_id, season, week)
+    cursor.execute(statement)
+    rows = cursor.fetchall()
+    game_ids = set()
+
+    for row in rows:
+        game_ids.add(row[0])
+
+    game_scores = dict()
+
+    for game_id in game_ids:
+        week_number = week_number_from_game_id(game_id)
+        fantasy_score = round(fantasy_points_from_game_skill_player(game_id), 1)
+        game_scores[week_number] = fantasy_score
+
+    return_dictionary = dict()
+    for week in sorted(game_scores.keys()):
+        return_dictionary[week] = game_scores[week]
+
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+    print(return_dictionary)
+    return return_dictionary
+
+def week_number_from_game_id(game_id):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT weekNumber FROM game WHERE gameId = (\'{}\');".format(game_id)
+
+    cursor.execute(statement)
+    row = cursor.fetchone()
+    if row == None:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return 0
+    else:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return row[0]
 
 def iter_row(cursor, size=100):
     while True:

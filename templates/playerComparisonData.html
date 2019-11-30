@@ -1,22 +1,14 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block app_content %}
 
-  <h2> {{nameOne}} versus {{nameTwo}} for week {{week}} in {{year}} Projection</h2>
+  <h2> {{year}} Week {{week}} Player Comparison </h2>
 
-  <h3> {{nameOne}} </h3>
-  <ul>
-    {% for stat in statsFirstPlayer %}
-      <li>{{ stat }} : {{statsFirstPlayer[stat]}}</li>
-    {% endfor %}
-  </ul>
+  <h4> {{nameOne}} </h4>
+  {{player_one_table}}
 
-  <h3> {{nameTwo}} </h3>
-  <ul>
-    {% for stat in statsSecondPlayer %}
-      <li>{{ stat }} : {{statsSecondPlayer[stat]}}</li>
-    {% endfor %}
-  </ul>
+  <h4> {{nameTwo}} </h4>
+  {{player_two_table}}
 
 
 {% endblock %}

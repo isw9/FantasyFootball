@@ -1,52 +1,39 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block app_content %}
+
+  <h1> Fantasy Leaders Points Per Game - {{year}} </h1>
 
   <h2> Top Quarterbacks</h2>
-  <ol type = "1">
-    {% for player in qbs %}
-      <li>{{player}} - {{qbs[player]}}</li>
-    {% endfor %}
-  </ol>
+  {{qbs_table}}
 
-    <h2> Top Running Backs</h2>
-    <ol type = "1">
-      {% for player in rbs %}
-        <li>{{player}} - {{rbs[player]}}</li>
-      {% endfor %}
-    </ol>
 
-    <h2> Top Wide Receivers</h2>
-    <ol type = "1">
-      {% for player in wrs %}
-        <li>{{player}} - {{wrs[player]}}</li>
-      {% endfor %}
-    </ol>
+  <h2> Top Running Backs</h2>
+  {{rbs_table}}
 
-    <h2> Top Tight Ends</h2>
-    <ol type = "1">
-      {% for player in tes %}
-        <li>{{player}} - {{tes[player]}}</li>
-      {% endfor %}
-    </ol>
+  <h2> Top Wide Receivers</h2>
+  {{wrs_table}}
 
-    <form action="" method="post" novalidate>
-      {{ form.hidden_tag() }}
-      <p>
-          {{ form.season.label }}<br>
-          {{ form.season(size=1) }}
-          {% for error in form.season.errors %}
-          <span style="color: red;">[{{ error }}]</span>
-          {% endfor %}
-      </p>
-      <p>
-          {{ form.numberResults.label }}<br>
-          {{ form.numberResults(size=1) }}
-          {% for error in form.numberResults.errors %}
-          <span style="color: red;">[{{ error }}]</span>
-          {% endfor %}
-      </p>
-      <p>{{ form.submit() }}</p>
-  </form>
+  <h2> Top Tight Ends</h2>
+  {{tes_table}}
+
+  <form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.season.label }}<br>
+        {{ form.season(size=1) }}
+        {% for error in form.season.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.numberResults.label }}<br>
+        {{ form.numberResults(size=1) }}
+        {% for error in form.numberResults.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </p>
+    <p>{{ form.submit() }}</p>
+</form>
 
 {% endblock %}
