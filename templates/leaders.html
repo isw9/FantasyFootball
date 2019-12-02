@@ -4,7 +4,7 @@
 
   <h1> {{year}} Points Per Game Fantasy Leaders </h1>
 
-  <h2> Top Quarterbacks</h2>
+  <!-- <h2> Top Quarterbacks</h2>
   {{qbs_table}}
 
 
@@ -15,8 +15,25 @@
   {{wrs_table}}
 
   <h2> Top Tight Ends</h2>
-  {{tes_table}}
+  {{tes_table}} -->
 
+<div style="display: flex; justify-content: space-around">
+   <h4> Top QBs</h4>
+    <div>{{qbs_table}}</div>
+   <h4> Top RBs</h4>
+    <div>{{rbs_table}}</div>
+</div>
+
+<br>
+<br>
+<br>
+
+<div style="display: flex; justify-content: space-around">
+  <h4>  Top WRs </h4>
+    <div>{{wrs_table}}</div>
+   <h4> Top TEs</h4>
+    <div>{{tes_table}}</div>
+</div>
   <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     <p>

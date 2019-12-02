@@ -60,9 +60,9 @@ def api_player_projection(year, week, player):
 
     projection = {
         "name": row[2],
-        "fantasy points": 10.0,
-        "passing yards": 200,
-        "rushing yards": 20,
+        "fantasy points": 22.7,
+        "passing yards": 223,
+        "rushing yards": 18,
         "recieving yards": 0,
         "passing touchdowns": 2,
         "rushing touchdowns": 1,
