@@ -241,17 +241,24 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
 
         return avgs_df[0:10].sort_values(["FSAvg"], ascending=[True])
 
-    def get_Xweeks_from(self, playerID, X,  season, week):
+    def get_Xweeks_before(self, playerID, X,  season, week):
         info = "gameID, season, weekNumber, opponentTeamID, ageDuringGame"
         stats = "passingYards, rushingYards, receivingYards, receptions, receivingTargets, " \
                 "rushingAttempts, rushingScores, passingScores, receivingScores, fumblesLost, " \
                 "interceptionsThrown, passingCompletions, passingAttempts"
-        orderBy = " ORDER BY season ASC, weekNumber ASC, gameID ASC"
-        query = "SELECT " + info + ", " + stats + " FROM fantasyfootball.game WHERE playerID = " + str(playerID) \
-                + " and season >= " + str(season) + " and weekNumber >= "+str(week) + orderBy + " LIMIT " + str(X) + ""
+        orderByASC = " ORDER BY season ASC, weekNumber ASC"
+        orderByDESC = " ORDER BY season DESC, weekNumber DESC"
+
+        query = "( select " + info + ", " + stats + " from fantasyfootball.game where playerID = " + str(playerID) \
+                + " and season <= " + str(season) + orderByDESC + " limit 27) " + orderByASC
         P_df = self.query_to_df(query)
         P_df.sort_values(["season", "weekNumber", "gameID"], ascending=[True, True, True], inplace=True)
-        return P_df.reset_index(drop=True)
+        P_df = P_df.reset_index(drop=True)
+
+        dropIndex = P_df[(P_df['season'] >= season) & (P_df['weekNumber'] > week)].index
+        P_df.drop(dropIndex, inplace=True)
+
+        return P_df.reset_index(drop=True).tail(X)
 
 
 if __name__ == "__main__":
@@ -263,7 +270,7 @@ if __name__ == "__main__":
 
     dB = DataBuilder(u, p, db, h)
 
-    print(dB.get_player_stats_Latest(666,11))
+    print(dB.get_Xweeks_before(666, 11, 2018, 4))
 
 
 
