@@ -105,7 +105,10 @@ def api_leaders(year, number_players, position):
 
     conn = mysql.connect()
     cursor = conn.cursor()
-    statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {};".format(position, year)
+    in_clause = "(SELECT player.playerID FROM game, player WHERE game.playerID = player.playerID AND fantasyfootball.player.position = (\'{}\') AND fantasyfootball.game.season = {} GROUP BY player.playerID HAVING COUNT(player.playerID) > 5)".format(position, year)
+    statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {} AND player.playerID IN {};".format(position, year, in_clause)
+    print(statement)
+    #statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {};".format(position, year)
     cursor.execute(statement)
 
     playerIDToCumulativeScore = dict()
