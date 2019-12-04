@@ -1,5 +1,4 @@
 from flask import Flask
-import nflgame
 from flask import request
 from flask_bootstrap import Bootstrap
 from flask import render_template, redirect
@@ -72,8 +71,10 @@ def weeklyStart():
         season = form.season.data
         week = form.week.data
         if full_name not in all_valid_players() or len(full_name.split()) != 2:
-            return render_template('playerError.html', title='playerError.html', name=full_name)
+            return render_template('playerError.html', title='playerError.html', name=name)
         else:
+            if season == 2019:
+                season = 2018
             stats = api_player_projection(season, week, full_name)
             items = []
             for stat in stats:
@@ -91,6 +92,8 @@ def weeklyStart():
             historic_table = HistoricTable(historic_items)
             historic_table.border=True
 
+            if season == 2018:
+                season = 2019
             return render_template('playerProjectionData.html', title='playerProjectionData',
                                     stats=stats,name=full_name, year=season, week=week, historic_stats=historic_stats,
                                     projection_table=projection_table, historic_table=historic_table)
@@ -109,10 +112,12 @@ def comparison():
         week = form.week.data
 
         if full_name_one not in all_valid_players() or len(full_name_one.split()) != 2:
-            return render_template('playerError.html', title='playerError.html', name=full_name_one)
+            return render_template('playerError.html', title='playerError.html', name=name_one)
         elif full_name_two not in all_valid_players() or len(full_name_two.split()) != 2:
-            return render_template('playerError.html', title='playerError.html', name=full_name_two)
+            return render_template('playerError.html', title='playerError.html', name=name_two)
         else:
+            if season == 2019:
+                season = 2018
             statsFirstPlayer = api_player_projection(season, week, full_name_one)
             items_one = []
             for stat in statsFirstPlayer:
@@ -131,6 +136,8 @@ def comparison():
             player_two_table = PlayerProjectionTable(items_two)
             player_two_table.border = True
 
+            if season == 2018:
+                season = 2019
             return render_template('playerComparisonData.html', title='playerProjectionData',
                                 statsFirstPlayer=statsFirstPlayer, statsSecondPlayer=statsSecondPlayer,
                                 nameOne=full_name_one, nameTwo=full_name_two, year=season, week=week,
@@ -157,6 +164,7 @@ def leaders():
     position = request.args.get('position').upper()
 
     return api_leaders(year, number_players, position)
+
 
 if __name__ == "__main__":
     app.run()

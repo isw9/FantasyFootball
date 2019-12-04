@@ -80,17 +80,17 @@ def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
     # print(prediction)
 
     game_ids = []
-    # for wr in wrs:
-    #     game_ids.extend(game_ids_season(wr, season))
+    for wr in wrs:
+        game_ids.extend(game_ids_season(wr, season))
 
-    # for rb in rbs:
-    #     game_ids.extend(game_ids_season(rb, season))
+    for rb in rbs:
+        game_ids.extend(game_ids_season(rb, season))
 
-    # for qb in qbs:
-    #     game_ids.extend(game_ids_season(qb, season))
-    #
-    # for te in tes:
-    #     game_ids.extend(game_ids_season(te, season))
+    for qb in qbs:
+        game_ids.extend(game_ids_season(qb, season))
+
+    for te in tes:
+        game_ids.extend(game_ids_season(te, season))
 
     total_counter = 0
     close_counter = 0
@@ -139,8 +139,6 @@ def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
                 print("Projection could not be computed")
 
 
-
-
     print('total counter')
     print(total_counter)
     print('close counter')
@@ -173,6 +171,21 @@ def leaders_table(stats):
     table = LeaderTable(items)
     table.border = True
     return table
+
+def massage_prediction(projection, pos):
+    print(pos)
+    if pos == 'QB':
+        projection['passing yards'] += 150
+    if pos == 'RB':
+        projection['rushing yards'] += 60
+        projection['receiving yards'] += 20
+    if pos == 'WR':
+        projection['receiving yards'] += 50
+        projection['receptions'] += 3.5
+    if pos == 'TE':
+        projection['receiving yards'] += 40
+        projection['receptions'] += 2.5
+    return projection
 
 def historic_fantasy_scores(season, week, player_name):
     player_id = player_id_from_name(player_name)
@@ -229,7 +242,20 @@ def iter_row(cursor, size=100):
             break
         for row in rows:
             yield row
+def fantasy_points_from_projection(projection):
+    predicted_score = 0.0
 
+    predicted_score += (projection['passing yards'] * .04)
+    predicted_score += (projection['rushing yards'] * .1)
+    predicted_score += (projection['receiving yards'] * .1)
+    predicted_score += (projection['receptions'] * 1)
+    predicted_score += (projection['passing touchdowns'] * 6)
+    predicted_score += (projection['rushing touchdowns'] * 4)
+    predicted_score += (projection['receiving touchdowns'] * 6)
+    predicted_score -= (projection['fumbles'] * 2)
+    predicted_score -= (projection['interceptions'] * 2)
+
+    return round(predicted_score, 1)
 def fantasy_points_from_game_stats(game):
 
     passing_yards = game[1]

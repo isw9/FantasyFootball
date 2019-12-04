@@ -35,43 +35,70 @@ def api_player_projection(year, week, player):
     playerID = row[0]
 
 
-    # u = 'secret'
-    # p = 'secret'
-    # db = 'secret'
-    # h = 'secret'
-    #
-    #
-    # model = load_model("ML/testModel")
 
-    # michael pick up here
-    # need something like
-    # predicted_dictionary = prediction(playerID, week, year)
 
-#     dB = DataBuilder(u, p, db, h)
-#     dB.db_get_minmax()
-#
-#     test_df = dB.get_Xweeks_from(playerID, 11, year, week)
-# #     # Get set of weeks to test:
-# #     test_df = dB.get_Xweeks_from(521, 11, 2015, 4)
-# #     print(test_df)
-# #     print(test_df.iloc[10:])
-# #     predict and compare to truth
-#     predict_and_compare(model, test_df, 0.05, dB)
+
+
+
+
+
+
+
+
+
+    dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
+                     Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
+    # # Get MinMax (necessary for normalization, do it once for a DB object)
+    dB.db_get_minmax()
+    # # Load model by name
+    model = load_model("3by50")
+    # # set wiggle %
+    w_norm = 0.05
+    # # Predict the week after week 4, 2018 for playerID = 666
+    prediction = predict_next_week(playerID, week, year, model, dB, w_norm)
+    # print(prediction)
+
+    predicted_passing_yards = round(max(prediction.iloc[0]['passingYards'], 0), 1)
+    predicted_rushing_yards = round(max(prediction.iloc[0]['rushingYards'], 0), 1)
+    predicted_receiving_yards = round(max(prediction.iloc[0]['receivingYards'], 0), 1)
+    predicted_receptions = round(max(prediction.iloc[0]['receptions'], 0), 1)
+    predicted_passing_scores = round(max(prediction.iloc[0]['passingScores'], 0), 1)
+    predicted_rushing_scores = round(max(prediction.iloc[0]['rushingScores'], 0), 1)
+    predicted_receiving_scores = round(max(prediction.iloc[0]['receivingScores'], 0), 1)
+    predicted_fumbles_lost = round(max(prediction.iloc[0]['fumblesLost'], 0), 1)
+    predicted_interceptions = round(max(prediction.iloc[0]['interceptionsThrown'], 0), 1)
+
+
+    predicted_score = 0.0
+
+    predicted_score += (predicted_passing_yards * .04)
+    predicted_score += (predicted_rushing_yards * .1)
+    predicted_score += (predicted_receiving_yards * .1)
+    predicted_score += (predicted_receptions * 1)
+    predicted_score += (predicted_rushing_scores * 6)
+    predicted_score += (predicted_passing_scores * 4)
+    predicted_score += (predicted_receiving_scores * 6)
+    predicted_score -= (predicted_fumbles_lost * 2)
+    predicted_score -= (predicted_interceptions * 2)
+
+    projected_score_final = round(predicted_score, 1)
 
     projection = {
         "name": row[2],
-        "fantasy points": 22.7,
-        "passing yards": 223,
-        "rushing yards": 18,
-        "recieving yards": 0,
-        "receptions": 0,
-        "passing touchdowns": 2,
-        "rushing touchdowns": 1,
-        "receiving touchdowns": 0,
-        "fumbles": 0,
-        "interceptions": 1
+        "fantasy points": projected_score_final,
+        "passing yards": predicted_passing_yards,
+        "rushing yards": predicted_rushing_yards,
+        "receiving yards": predicted_receiving_yards,
+        "receptions": predicted_receptions,
+        "passing touchdowns": predicted_passing_scores,
+        "rushing touchdowns": predicted_rushing_scores,
+        "receiving touchdowns": predicted_receiving_scores,
+        "fumbles": predicted_fumbles_lost,
+        "interceptions": predicted_interceptions
     }
 
+    projection = massage_prediction(projection, row[1])
+    projection['fantasy points'] = fantasy_points_from_projection(projection)
     return projection
 
 def api_leaders(year, number_players, position):
