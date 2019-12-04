@@ -12,7 +12,7 @@ app.config.from_object(Config)
 mysql = MySQL(app)
 
 
-def api_player_projection(year, week, player):
+def api_player_projection(year, week, player, dB):
     conn = mysql.connect()
     cursor = conn.cursor()
     statement = statement = "SELECT * FROM player WHERE playerName = (\'{}\');".format(player)
@@ -37,10 +37,14 @@ def api_player_projection(year, week, player):
     playerID = row[0]
 
     K.clear_session()
-    dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
-                     Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
+
+    #---- use arg passed dB instead
+    #dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
+    #                 Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
     # # Get MinMax (necessary for normalization, do it once for a DB object)
-    dB.db_get_minmax()
+    #dB.db_get_minmax()
+    #----
+
     # # Load model by name
     model = load_model("3by50")
     # # set wiggle %

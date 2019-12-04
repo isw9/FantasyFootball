@@ -9,9 +9,14 @@ from util import *
 from flask_table import Table, Col
 from tables import *
 
+
 app = Flask(__name__)
 app.config.from_object(Config)
 bootstrap = Bootstrap(app)
+app_dB = dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
+                     Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
+app_dB.db_get_minmax()
+
 
 @app.route("/", methods = ['GET', 'POST'])
 def home():
@@ -77,7 +82,7 @@ def weeklyStart():
             if season == 2019:
                 season = 2018
                 s_2019 = True
-            stats = api_player_projection(season, week, full_name)
+            stats = api_player_projection(season, week, full_name, app_dB)
             items = []
             for stat in stats:
                 if stat != 'name':
@@ -122,7 +127,7 @@ def comparison():
             if season == 2019:
                 season = 2018
                 s_2019 = True
-            statsFirstPlayer = api_player_projection(season, week, full_name_one)
+            statsFirstPlayer = api_player_projection(season, week, full_name_one, app_dB)
             items_one = []
             for stat in statsFirstPlayer:
                 if stat != 'name':
@@ -131,7 +136,7 @@ def comparison():
             player_one_table = PlayerProjectionTable(items_one)
             player_one_table.border = True
 
-            statsSecondPlayer = api_player_projection(season, week, full_name_two)
+            statsSecondPlayer = api_player_projection(season, week, full_name_two, app_dB)
             items_two = []
             for stat in statsSecondPlayer:
                 if stat != 'name':
@@ -159,7 +164,7 @@ def player():
     player_name = player_name.split('\\', 1)[0]
     strippedPlayerName = player_name.replace("'", "")
 
-    return api_player_projection(year, week_number, strippedPlayerName)
+    return api_player_projection(year, week_number, strippedPlayerName, app_dB)
 
 @app.route('/api/leaders', methods = ['GET'])
 def leaders():
