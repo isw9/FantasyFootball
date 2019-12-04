@@ -63,6 +63,7 @@ def index():
 
 @app.route('/playerProjection', methods = ['GET', 'POST'])
 def weeklyStart():
+    s_2019 = False
     form = PlayerProjectionForm()
     if form.validate_on_submit():
         name = form.playerName.data
@@ -75,6 +76,7 @@ def weeklyStart():
         else:
             if season == 2019:
                 season = 2018
+                s_2019 = True
             stats = api_player_projection(season, week, full_name)
             items = []
             for stat in stats:
@@ -92,7 +94,7 @@ def weeklyStart():
             historic_table = HistoricTable(historic_items)
             historic_table.border=True
 
-            if season == 2018:
+            if season == 2018 and s_2019 is True:
                 season = 2019
             return render_template('playerProjectionData.html', title='playerProjectionData',
                                     stats=stats,name=full_name, year=season, week=week, historic_stats=historic_stats,
@@ -101,6 +103,7 @@ def weeklyStart():
 
 @app.route('/playerComparison', methods = ['GET', 'POST'])
 def comparison():
+    s_2019 = False
     form = PlayerComparisonForm()
     if form.validate_on_submit():
         name_one = form.playerNameOne.data
@@ -118,6 +121,7 @@ def comparison():
         else:
             if season == 2019:
                 season = 2018
+                s_2019 = True
             statsFirstPlayer = api_player_projection(season, week, full_name_one)
             items_one = []
             for stat in statsFirstPlayer:
@@ -136,7 +140,7 @@ def comparison():
             player_two_table = PlayerProjectionTable(items_two)
             player_two_table.border = True
 
-            if season == 2018:
+            if season == 2018 and s_2019 is True:
                 season = 2019
             return render_template('playerComparisonData.html', title='playerProjectionData',
                                 statsFirstPlayer=statsFirstPlayer, statsSecondPlayer=statsSecondPlayer,

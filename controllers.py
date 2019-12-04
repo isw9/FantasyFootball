@@ -5,10 +5,12 @@ from heapq import nlargest
 from util import *
 from config import Config
 #from ML.FF_LSTM import *
+from keras import backend as K
 
 app = Flask(__name__)
 app.config.from_object(Config)
 mysql = MySQL(app)
+
 
 def api_player_projection(year, week, player):
     conn = mysql.connect()
@@ -34,18 +36,7 @@ def api_player_projection(year, week, player):
     name = row[2]
     playerID = row[0]
 
-
-
-
-
-
-
-
-
-
-
-
-
+    K.clear_session()
     dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
                      Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
     # # Get MinMax (necessary for normalization, do it once for a DB object)
@@ -55,7 +46,7 @@ def api_player_projection(year, week, player):
     # # set wiggle %
     w_norm = 0.05
     # # Predict the week after week 4, 2018 for playerID = 666
-    prediction = predict_next_week(playerID, week, year, model, dB, w_norm)
+    prediction = predict_next_week(playerID, week + 1, year, model, dB, w_norm)
     # print(prediction)
 
     predicted_passing_yards = round(max(prediction.iloc[0]['passingYards'], 0), 1)
@@ -99,6 +90,7 @@ def api_player_projection(year, week, player):
 
     projection = massage_prediction(projection, row[1])
     projection['fantasy points'] = fantasy_points_from_projection(projection)
+    K.clear_session()
     return projection
 
 def api_leaders(year, number_players, position):
