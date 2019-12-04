@@ -57,6 +57,7 @@ def index():
     rbs_table = leaders_table(rbs)
     tes_table = leaders_table(tes)
     qbs_table = leaders_table(qbs)
+#    analyze_prediction_model(wrs, rbs, tes, qbs, 5.0, 2018)
     return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes,
                             qbs=qbs, form=form, year=season, wrs_table=wrs_table,
                             rbs_table=rbs_table, tes_table=tes_table, qbs_table=qbs_table)

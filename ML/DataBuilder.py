@@ -261,16 +261,13 @@ class DataBuilder:  # Object to request and format training data sets from MySQL
         return P_df.reset_index(drop=True).tail(X)
 
 
-if __name__ == "__main__":
-    u = sys.argv[1] ; p = sys.argv[2] ; db = sys.argv[3] ; h = sys.argv[4]
-    print(CH+" u: " + u)
-    print(CH+" p: " + p)
-    print(CH+"db: " + db)
-    print(CH+" h: " + h)
-
-    dB = DataBuilder(u, p, db, h)
-
-    print(dB.get_Xweeks_before(666, 11, 2018, 4))
-
-
-
+# if __name__ == "__main__":
+#     u = sys.argv[1] ; p = sys.argv[2] ; db = sys.argv[3] ; h = sys.argv[4]
+#     print(CH+" u: " + u)
+#     print(CH+" p: " + p)
+#     print(CH+"db: " + db)
+#     print(CH+" h: " + h)
+#
+#     dB = DataBuilder(u, p, db, h)
+#
+#     print(dB.get_Xweeks_before(666, 11, 2018, 4))

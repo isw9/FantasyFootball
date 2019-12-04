@@ -15,7 +15,7 @@ from keras.activations import softmax
 from keras.optimizers import SGD
 from keras.optimizers import rmsprop
 from keras.optimizers import adam
-from DataBuilder import DataBuilder
+from ML.DataBuilder import DataBuilder
 
 CH = "[FF_LSTM] "
 path = os.path.abspath(__file__)
@@ -30,11 +30,11 @@ def save_model(model, name):
 
 
 def load_model(model_name):
-    json_file = open("Models/"+model_name+".json", 'r')
+    json_file = open("ML/Models/"+model_name+".json", 'r')
     model_json = json_file.read()
     json_file.close()
     model = model_from_json(model_json)
-    model.load_weights("Models/"+model_name+".h5")
+    model.load_weights("ML/Models/"+model_name+".h5")
     print(CH + "Loaded model ~" + model_name + "~")
     return model
 
@@ -106,7 +106,7 @@ def predict_and_compare(model, input_df, wiggle_norm):
     print(truth)
 
 
-def predict_next(model, input_df, wiggle_norm):
+def predict_next(model, input_df, wiggle_norm, dB):
     data = dB.df_wiggle_norm(input_df, 0.05).drop(columns=["gameID", "season", "weekNumber"]).values.reshape(1, 10, 15)
 
     predict = model.predict(data)
@@ -116,34 +116,34 @@ def predict_next(model, input_df, wiggle_norm):
 
 def predict_next_week(playerID, c_week, season, model, dB, wiggle_norm):
     df = dB.get_Xweeks_before(playerID, 10, season, c_week)
-    return predict_next(model, df, wiggle_norm)
+    return predict_next(model, df, wiggle_norm, dB)
 
 
 
-if __name__ == "__main__":
-    # DB setup:
-    print(CH + "Connecting to database. . .")
-    u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
-    print(CH + " u: " + u)
-    print(CH + " p: " + p)
-    print(CH + "db: " + db)
-    print(CH + " h: " + h)
-
-    """
-    How to predict a player's next score from week X season Y to week X+1
-    need to import DataBuilder.py and FF_LSTM.py
-    """
-    # Create DataBuilder:
-    dB = DataBuilder(u, p, db, h)
-    # Get MinMax (necessary for normalization, do it once for a DB object)
-    dB.db_get_minmax()
-    # Load model by name
-    model = load_model("3by50")
-    # set wiggle %
-    w_norm = 0.05
-    # Predict the week after week 4, 2018 for playerID = 666
-    prediction = predict_next_week(666, 4, 2018, model, dB, w_norm)
-    print(prediction)
+# if __name__ == "__main__":
+#     # DB setup:
+#     print(CH + "Connecting to database. . .")
+#     u = sys.argv[1]; p = sys.argv[2]; db = sys.argv[3]; h = sys.argv[4]
+#     print(CH + " u: " + u)
+#     print(CH + " p: " + p)
+#     print(CH + "db: " + db)
+#     print(CH + " h: " + h)
+#
+#     """
+#     How to predict a player's next score from week X season Y to week X+1
+#     need to import DataBuilder.py and FF_LSTM.py
+#     """
+#     # Create DataBuilder:
+#     dB = DataBuilder(u, p, db, h)
+#     # Get MinMax (necessary for normalization, do it once for a DB object)
+#     dB.db_get_minmax()
+#     # Load model by name
+#     model = load_model("3by50")
+#     # set wiggle %
+#     w_norm = 0.05
+#     # Predict the week after week 4, 2018 for playerID = 666
+#     prediction = predict_next_week(666, 4, 2018, model, dB, w_norm)
+#     print(prediction)
 
 
     #name = "4by50_full"
@@ -211,11 +211,3 @@ if __name__ == "__main__":
 
     save_model(model, "testModel")
     """
-
-
-
-
-
-
-
-

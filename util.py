@@ -5,6 +5,7 @@ from heapq import nlargest
 from config import Config
 from util import *
 from tables import *
+from ML.FF_LSTM import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -58,6 +59,110 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Tampa Bay Buccaneers': 'TB',
 'Tennessee Titans': 'TEN',
 'Washington Redskins': 'WAS'}
+
+def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
+    number_within_margin = 0
+
+
+    # How to predict a player's next score from week X season Y to week X+1
+    # need to import DataBuilder.py and FF_LSTM.py
+    # Create DataBuilder:
+    dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
+                     Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
+    # # Get MinMax (necessary for normalization, do it once for a DB object)
+    dB.db_get_minmax()
+    # # Load model by name
+    model = load_model("3by50")
+    # # set wiggle %
+    w_norm = 0.05
+    # # Predict the week after week 4, 2018 for playerID = 666
+    prediction = predict_next_week(666, 4, 2018, model, dB, w_norm)
+    # print(prediction)
+
+    game_ids = []
+    # for wr in wrs:
+    #     game_ids.extend(game_ids_season(wr, season))
+
+    # for rb in rbs:
+    #     game_ids.extend(game_ids_season(rb, season))
+
+    # for qb in qbs:
+    #     game_ids.extend(game_ids_season(qb, season))
+    #
+    # for te in tes:
+    #     game_ids.extend(game_ids_season(te, season))
+
+    total_counter = 0
+    close_counter = 0
+    for game_id in game_ids:
+        game_metadata = week_number_and_player_id_from_game_id(game_id)
+        week_number = game_metadata[1]
+        player_id = game_metadata[0]
+
+        if week_number > 1:
+            actual_score = round(fantasy_points_from_game_skill_player(game_id), 1)
+
+            predicted_score = 0.0
+            try:
+                prediction = predict_next_week(player_id, week_number, season, model, dB, w_norm)
+                total_counter += 1
+                predicted_passing_yards = prediction.iloc[0]['passingYards']
+                predicted_rushing_yards = prediction.iloc[0]['rushingYards']
+                predicted_receiving_yards = prediction.iloc[0]['receivingYards']
+                predicted_receptions = prediction.iloc[0]['receptions']
+                predicted_passing_scores = prediction.iloc[0]['passingScores']
+                predicted_rushing_scores = prediction.iloc[0]['rushingScores']
+                predicted_receiving_scores = prediction.iloc[0]['receivingScores']
+                projected_fumbles_lost = prediction.iloc[0]['fumblesLost']
+                projected_interceptions = prediction.iloc[0]['interceptionsThrown']
+
+                predicted_score += (predicted_passing_yards * .04)
+                predicted_score += (predicted_rushing_yards * .1)
+                predicted_score += (predicted_receiving_yards * .1)
+                predicted_score += (predicted_receptions * 1)
+                predicted_score += (predicted_rushing_scores * 6)
+                predicted_score += (predicted_passing_scores * 4)
+                predicted_score += (predicted_receiving_scores * 6)
+                predicted_score -= (projected_fumbles_lost * 2)
+                predicted_score -= (projected_interceptions * 2)
+
+                projected_score_final = round(predicted_score, 1)
+
+                print('actual')
+                print(actual_score)
+                print('predicted')
+                print(projected_score_final)
+
+                if abs(projected_score_final - actual_score) <= 10.0:
+                    close_counter += 1
+            except ValueError:
+                print("Projection could not be computed")
+
+
+
+
+    print('total counter')
+    print(total_counter)
+    print('close counter')
+    print(close_counter)
+
+def game_ids_season(player_name, season):
+    player_id = player_id_from_name(player_name)
+
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {};".format(player_id, season)
+    cursor.execute(statement)
+    rows = cursor.fetchall()
+
+    to_return = []
+    for row in rows:
+        to_return.append(row[0])
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+    return to_return
 
 def leaders_table(stats):
     items = []
@@ -152,6 +257,24 @@ def fantasy_points_from_game_stats(game):
     fantasy_points += (special_teams_scores * 6)
 
     return fantasy_points
+
+def week_number_and_player_id_from_game_id(game_id):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT playerID, weekNumber FROM game WHERE gameID = (\'{}\');".format(game_id)
+
+    cursor.execute(statement)
+    row = cursor.fetchone()
+    if row == None:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return [0, 0]
+    else:
+        cursor.close()
+        conn.commit()
+        conn.close()
+        return [row[0], row[1]]
 
 def player_name_from_player_id(player_id):
     conn = mysql.connect()
