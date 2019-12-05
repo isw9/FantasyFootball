@@ -61,6 +61,29 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Tennessee Titans': 'TEN',
 'Washington Redskins': 'WAS'}
 
+
+def player_played_in_season(full_name, season, week_number):
+    player_id = player_id_from_name(full_name)
+
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {} AND weekNumber < {};".format(player_id, season, week_number)
+    cursor.execute(statement)
+    rows = cursor.fetchall()
+
+    game_ids = []
+    for row in rows:
+        game_ids.append(row[0])
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+
+    if len(game_ids) > 0:
+        return True
+    else:
+        return False
+
 def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
     number_within_margin = 0
 

@@ -82,6 +82,8 @@ def weeklyStart():
             if season == 2019:
                 season = 2018
                 s_2019 = True
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=name, year=season)
             stats = api_player_projection(season, week, full_name, app_dB)
             items = []
             for stat in stats:
@@ -127,6 +129,8 @@ def comparison():
             if season == 2019:
                 season = 2018
                 s_2019 = True
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=full_name_one, year=season)
             statsFirstPlayer = api_player_projection(season, week, full_name_one, app_dB)
             items_one = []
             for stat in statsFirstPlayer:
@@ -136,6 +140,8 @@ def comparison():
             player_one_table = PlayerProjectionTable(items_one)
             player_one_table.border = True
 
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=full_name_two, year=season)
             statsSecondPlayer = api_player_projection(season, week, full_name_two, app_dB)
             items_two = []
             for stat in statsSecondPlayer:
@@ -164,6 +170,8 @@ def player():
     player_name = player_name.split('\\', 1)[0]
     strippedPlayerName = player_name.replace("'", "")
 
+    if not player_played_in_season(full_name, season, week):
+        return render_template('playerYearError.html', title='playerYearError.html', name=name, year=season)
     return api_player_projection(year, week_number, strippedPlayerName, app_dB)
 
 @app.route('/api/leaders', methods = ['GET'])
