@@ -9,16 +9,15 @@ from util import *
 from flask_table import Table, Col
 from tables import *
 
-
-app = Flask(__name__)
-app.config.from_object(Config)
-bootstrap = Bootstrap(app)
-app_dB = dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
+application = Flask(__name__)
+application.config.from_object(Config)
+bootstrap = Bootstrap(application)
+application_dB = dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
                      Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
-app_dB.db_get_minmax()
+application_dB.db_get_minmax()
 
 
-@app.route("/", methods = ['GET', 'POST'])
+@application.route("/", methods = ['GET', 'POST'])
 def home():
     form = LeadersForm()
     if form.validate_on_submit():
@@ -41,7 +40,7 @@ def home():
     return render_template('leaders.html', title='Leaders', wrs=wrs, rbs=rbs, tes=tes,
                             qbs=qbs, form=form, year=season, wrs_table=wrs_table,
                             rbs_table=rbs_table, tes_table=tes_table, qbs_table=qbs_table)
-@app.route("/leaders", methods = ['GET', 'POST'])
+@application.route("/leaders", methods = ['GET', 'POST'])
 def index():
     form = LeadersForm()
     if form.validate_on_submit():
@@ -66,7 +65,7 @@ def index():
                             qbs=qbs, form=form, year=season, wrs_table=wrs_table,
                             rbs_table=rbs_table, tes_table=tes_table, qbs_table=qbs_table)
 
-@app.route('/playerProjection', methods = ['GET', 'POST'])
+@application.route('/playerProjection', methods = ['GET', 'POST'])
 def weeklyStart():
     s_2019 = False
     form = PlayerProjectionForm()
@@ -82,7 +81,9 @@ def weeklyStart():
             if season == 2019:
                 season = 2018
                 s_2019 = True
-            stats = api_player_projection(season, week, full_name, app_dB)
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=name, year=season)
+            stats = api_player_projection(season, week, full_name, application_dB)
             items = []
             for stat in stats:
                 if stat != 'name':
@@ -106,7 +107,7 @@ def weeklyStart():
                                     projection_table=projection_table, historic_table=historic_table)
     return render_template('playerProjection.html', title='playerProjection', form=form)
 
-@app.route('/playerComparison', methods = ['GET', 'POST'])
+@application.route('/playerComparison', methods = ['GET', 'POST'])
 def comparison():
     s_2019 = False
     form = PlayerComparisonForm()
@@ -127,7 +128,9 @@ def comparison():
             if season == 2019:
                 season = 2018
                 s_2019 = True
-            statsFirstPlayer = api_player_projection(season, week, full_name_one, app_dB)
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=full_name_one, year=season)
+            statsFirstPlayer = api_player_projection(season, week, full_name_one, application_dB)
             items_one = []
             for stat in statsFirstPlayer:
                 if stat != 'name':
@@ -136,7 +139,9 @@ def comparison():
             player_one_table = PlayerProjectionTable(items_one)
             player_one_table.border = True
 
-            statsSecondPlayer = api_player_projection(season, week, full_name_two, app_dB)
+            if not player_played_in_season(full_name, season, week):
+                return render_template('playerYearError.html', title='playerYearError.html', name=full_name_two, year=season)
+            statsSecondPlayer = api_player_projection(season, week, full_name_two, application_dB)
             items_two = []
             for stat in statsSecondPlayer:
                 if stat != 'name':
@@ -153,27 +158,29 @@ def comparison():
                                 player_one_table=player_one_table, player_two_table=player_two_table)
     return render_template('playerComparison.html', title='playerProjection', form=form)
 
-@app.route('/api/playerProjection', methods = ['GET'])
+@application.route('/api/playerProjection', methods = ['GET'])
 def player():
 
     year = request.args.get('year')
-    week_number = request.args.get('week')
+    week_number = request.args.get('week_number')
     player_name = request.args.get('player_name')
     player_name = player_name.split('*', 1)[0]
     player_name = player_name.split('+', 1)[0]
     player_name = player_name.split('\\', 1)[0]
     strippedPlayerName = player_name.replace("'", "")
 
-    return api_player_projection(year, week_number, strippedPlayerName, app_dB)
+    if not player_played_in_season(player_name, year, week_number):
+        return render_template('playerYearError.html', title='playerYearError.html', name=name, year=season)
+    return api_player_projection(int(year), int(week_number), strippedPlayerName, application_dB)
 
-@app.route('/api/leaders', methods = ['GET'])
+@application.route('/api/leaders', methods = ['GET'])
 def leaders():
     year = request.args.get('year')
     number_players = request.args.get('number_players')
     position = request.args.get('position').upper()
 
-    return api_leaders(year, number_players, position)
+    return api_leaders(int(year), int(number_players), position)
 
 
 if __name__ == "__main__":
-    app.run()
+    application.run()

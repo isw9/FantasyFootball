@@ -1,16 +1,16 @@
 from flask import Blueprint, jsonify, request
-from flaskext.mysql import MySQL
+import mysql.connector
 from flask import Flask
 from heapq import nlargest
 from config import Config
-import re
 from util import *
+import re
 from tables import *
 from ML.FF_LSTM import *
 
 app = Flask(__name__)
 app.config.from_object(Config)
-mysql = MySQL(app)
+#mysql = MySQL(app)
 
 offensive_players = set()
 bad_abbreviation_set = {'TAM', 'GNB', 'NOR', 'KAN', 'NWE', 'SFO', 'STL', 'SDG'}
@@ -60,6 +60,31 @@ abbreviation_dictionary = {'Arizona Cardinals': 'ARI',
 'Tampa Bay Buccaneers': 'TB',
 'Tennessee Titans': 'TEN',
 'Washington Redskins': 'WAS'}
+
+
+def player_played_in_season(full_name, season, week_number):
+    player_id = player_id_from_name(full_name)
+
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
+    cursor = conn.cursor()
+    statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {} AND weekNumber < {};".format(player_id, season, week_number)
+    cursor.execute(statement)
+    rows = cursor.fetchall()
+
+    game_ids = []
+    for row in rows:
+        game_ids.append(row[0])
+
+    cursor.close()
+    conn.commit()
+    conn.close()
+
+    if len(game_ids) > 0:
+        return True
+    else:
+        return False
 
 def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
     number_within_margin = 0
@@ -147,7 +172,9 @@ def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
 def game_ids_season(player_name, season):
     player_id = player_id_from_name(player_name)
 
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {};".format(player_id, season)
     cursor.execute(statement)
@@ -175,6 +202,7 @@ def leaders_table(stats):
 def massage_prediction(projection, pos):
     if pos == 'QB':
         projection['passing yards'] += 150
+        projection['passing touchdowns'] += 1
     if pos == 'RB':
         projection['rushing yards'] += 60
         projection['receiving yards'] += 20
@@ -189,7 +217,9 @@ def massage_prediction(projection, pos):
 def historic_fantasy_scores(season, week, player_name):
     player_id = player_id_from_name(player_name)
 
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT gameID FROM game WHERE playerID = (\'{}\') AND season = {} AND weekNumber < {};".format(player_id, season, week)
     cursor.execute(statement)
@@ -217,7 +247,9 @@ def historic_fantasy_scores(season, week, player_name):
     return return_dictionary
 
 def week_number_from_game_id(game_id):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT weekNumber FROM game WHERE gameId = (\'{}\');".format(game_id)
 
@@ -284,7 +316,9 @@ def fantasy_points_from_game_stats(game):
     return fantasy_points
 
 def week_number_and_player_id_from_game_id(game_id):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT playerID, weekNumber FROM game WHERE gameID = (\'{}\');".format(game_id)
 
@@ -302,7 +336,9 @@ def week_number_and_player_id_from_game_id(game_id):
         return [row[0], row[1]]
 
 def player_name_from_player_id(player_id):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT playerName FROM player WHERE playerID = (\'{}\');".format(player_id)
 
@@ -320,7 +356,9 @@ def player_name_from_player_id(player_id):
         return row[0]
 
 def opponent_id_for_game(abbreviation, year, opponentPosition):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT teamID FROM team WHERE abbreviation = \'{}\' AND position = \'{}\' AND season = {};".format(abbreviation, opponentPosition, year)
 
@@ -393,7 +431,9 @@ def fantasy_points_from_game_stats(game):
     return fantasy_points
 
 def fantasy_points_from_game_skill_player(gameID):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT * FROM game WHERE gameID = \'{}\';".format(gameID)
     cursor.execute(statement)
@@ -436,7 +476,9 @@ def fantasy_points_from_game_skill_player(gameID):
         return fantasy_points
 
 def player_id_from_name(player_name):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT playerID FROM player WHERE playerName = (\'{}\');".format(player_name)
 
@@ -489,7 +531,9 @@ def add_weekly_game_stats_to_database(filename, year, opponentSideOfBall):
     }
     try:
         input_file = open(filename, 'r')
-        conn = mysql.connect()
+        conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
         for player in input_file:
             split_player_stats = player.split(',')
             stats['passingYards'] = int(split_player_stats[16])
@@ -575,7 +619,9 @@ def add_players_to_database(filename, year):
                     if player_name not in offensive_players:
                         offensive_players.add(player_name)
                         year_born = year - age
-                        conn = mysql.connect()
+                        conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
                         cursor = conn.cursor()
                         statement = "INSERT INTO player (position, playerName, yearBorn) VALUES (\'{}\', \'{}\', {});".format(position, stripped_player_name, year_born)
 
@@ -600,7 +646,9 @@ def add_team_stats_to_database(seasonValues, year, position):
     fumblesAverage = round(seasonValues['fumbles'] / 16.0, 1)
     abbreviation = seasonValues['abbreviation']
 
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "INSERT INTO team (rushingYardsAverage, rushingScoresAverage, passingYardsAverage, passingScoresAverage, fumblesAverage, interceptionsAverage, season, abbreviation, position) VALUES ({}, {}, {}, {}, {}, {}, {}, \'{}\', \'{}\');".format(rushingYardsAverage, rushingScoresAverage, passingYardsAverage, passingScoresAverage, fumblesAverage, interceptionsThrownAverage, year, abbreviation, position)
 
@@ -612,7 +660,9 @@ def add_team_stats_to_database(seasonValues, year, position):
 
 def all_valid_players():
     valid_players = set()
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = "SELECT playerName FROM player;"
 
