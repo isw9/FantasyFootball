@@ -14,7 +14,7 @@ Then access the application by navigating to:
 
 
 If you don't know any football players off the top of your head, here are some
-you can try projecting stats for.
+you can try projecting stats for in the 2018 season.
 ```
 Andrew Luck
 Matt Ryan
