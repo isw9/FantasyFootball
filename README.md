@@ -11,3 +11,24 @@ Then start the application with:
 
 Then access the application by navigating to:
 `localhost:5000`
+
+
+If you don't know any football players off the top of your head, here are some
+you can try projecting stats for.
+```
+Andrew Luck
+Matt Ryan
+Patrick Mahomes
+
+Davante Adams
+Antonio Brown
+DeAndre Hopkins
+
+Todd Gurley
+Saquon Barkley
+Christian McCaffrey
+
+Travis Kelce
+Zach Ertz
+George Kittle
+```

@@ -3,6 +3,7 @@ from flaskext.mysql import MySQL
 from flask import Flask
 from heapq import nlargest
 from config import Config
+import re
 from util import *
 from tables import *
 from ML.FF_LSTM import *
@@ -77,7 +78,6 @@ def analyze_prediction_model(wrs, rbs, tes, qbs, margin, season):
     w_norm = 0.05
     # # Predict the week after week 4, 2018 for playerID = 666
     prediction = predict_next_week(666, 4, 2018, model, dB, w_norm)
-    # print(prediction)
 
     game_ids = []
     for wr in wrs:
@@ -173,7 +173,6 @@ def leaders_table(stats):
     return table
 
 def massage_prediction(projection, pos):
-    print(pos)
     if pos == 'QB':
         projection['passing yards'] += 150
     if pos == 'RB':
@@ -633,7 +632,7 @@ def sanitize_player_name(name):
     else:
         first_name = full_name[0]
         last_name = full_name[1]
-        first_name = first_name.capitalize()
-        last_name = last_name.capitalize()
+        first_name = re.sub('([a-zA-Z])', lambda x: x.groups()[0].upper(), first_name, 1)
+        last_name = re.sub('([a-zA-Z])', lambda x: x.groups()[0].upper(), last_name, 1)
         full_name = "{} {}".format(first_name, last_name)
         return full_name

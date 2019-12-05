@@ -38,20 +38,13 @@ def api_player_projection(year, week, player, dB):
 
     K.clear_session()
 
-    #---- use arg passed dB instead
-    #dB = DataBuilder(Config.MYSQL_DATABASE_USER, Config.MYSQL_DATABASE_PASSWORD,
-    #                 Config.MYSQL_DATABASE_DB, Config.MYSQL_DATABASE_HOST)
-    # # Get MinMax (necessary for normalization, do it once for a DB object)
-    #dB.db_get_minmax()
-    #----
 
     # # Load model by name
     model = load_model("3by50")
     # # set wiggle %
     w_norm = 0.05
-    # # Predict the week after week 4, 2018 for playerID = 666
     prediction = predict_next_week(playerID, week + 1, year, model, dB, w_norm)
-    # print(prediction)
+
 
     predicted_passing_yards = round(max(prediction.iloc[0]['passingYards'], 0), 1)
     predicted_rushing_yards = round(max(prediction.iloc[0]['rushingYards'], 0), 1)
@@ -111,8 +104,6 @@ def api_leaders(year, number_players, position):
     cursor = conn.cursor()
     in_clause = "(SELECT player.playerID FROM game, player WHERE game.playerID = player.playerID AND fantasyfootball.player.position = (\'{}\') AND fantasyfootball.game.season = {} GROUP BY player.playerID HAVING COUNT(player.playerID) > 5)".format(position, year)
     statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {} AND player.playerID IN {};".format(position, year, in_clause)
-    print(statement)
-    #statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {};".format(position, year)
     cursor.execute(statement)
 
     playerIDToCumulativeScore = dict()
