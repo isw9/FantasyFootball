@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-import mysql.connector
+from flaskext.mysql import MySQL
 from flask import Flask
 from heapq import nlargest
 from util import *
