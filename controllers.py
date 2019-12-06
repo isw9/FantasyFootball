@@ -9,11 +9,13 @@ from keras import backend as K
 
 app = Flask(__name__)
 app.config.from_object(Config)
-mysql = MySQL(app)
+#mysql = MySQL(app)
 
 
 def api_player_projection(year, week, player, dB):
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     statement = statement = "SELECT * FROM player WHERE playerName = (\'{}\');".format(player)
 
@@ -100,7 +102,9 @@ def api_leaders(year, number_players, position):
         msg = " position {} is not valid;".format(position)
         return msg, code
 
-    conn = mysql.connect()
+    conn = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     cursor = conn.cursor()
     in_clause = "(SELECT player.playerID FROM game, player WHERE game.playerID = player.playerID AND fantasyfootball.player.position = (\'{}\') AND fantasyfootball.game.season = {} GROUP BY player.playerID HAVING COUNT(player.playerID) > 8)".format(position, year)
     statement = "SELECT * FROM game, player WHERE game.playerID = player.playerID AND player.position = (\'{}\') AND game.season = {} AND player.playerID IN {};".format(position, year, in_clause)
