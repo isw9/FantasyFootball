@@ -8,7 +8,7 @@ from config import Config
 from util import *
 from flask_table import Table, Col
 from tables import *
-
+import mysql.connector
 
 application = Flask(__name__)
 application.config.from_object(Config)
@@ -20,6 +20,9 @@ application_dB.db_get_minmax()
 
 @application.route("/", methods = ['GET', 'POST'])
 def home():
+    cnx = mysql.connector.connect(user=Config.MYSQL_DATABASE_USER, password=Config.MYSQL_DATABASE_PASSWORD,
+                              host=Config.MYSQL_DATABASE_HOST,
+                              database=Config.MYSQL_DATABASE_DB)
     form = LeadersForm()
     if form.validate_on_submit():
         season = form.season.data
