@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from DataBuilder import DataBuilder
 
 CH = "[FF_Vis] "
@@ -31,7 +31,7 @@ def make_top_10_QB_graph(position, season, dB):
     top_10 = dB.get_top10_players(position, season, FS=True)
 
     top_10.plot.barh(x="playerID")
-    plt.savefig("test.png")
+    #plt.savefig("test.png")
 
     return True
 

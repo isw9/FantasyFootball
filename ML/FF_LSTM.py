@@ -3,7 +3,7 @@ import os
 import random
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import importlib
 from keras.models import Sequential
 from keras.layers import Dense
@@ -70,13 +70,13 @@ def train_model(dB, name):
             #print(player)
             #print(ban)
 
-    plt.plot(history.history['accuracy'], label='acc')
-    plt.plot(history.history['loss'], label='loss')
-    plt.plot(history.history['val_accuracy'], label='val_acc')
-    plt.plot(history.history['val_loss'], label='val_loss')
-    plt.legend()
-    plt.savefig("Plots/"+name+"_log.png")
-    plt.close()
+    # plt.plot(history.history['accuracy'], label='acc')
+    # plt.plot(history.history['loss'], label='loss')
+    # plt.plot(history.history['val_accuracy'], label='val_acc')
+    # plt.plot(history.history['val_loss'], label='val_loss')
+    # plt.legend()
+    # plt.savefig("Plots/"+name+"_log.png")
+    # plt.close()
     return model
 
 
