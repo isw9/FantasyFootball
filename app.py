@@ -128,7 +128,7 @@ def comparison():
             if season == 2019:
                 season = 2018
                 s_2019 = True
-            if not player_played_in_season(full_name, season, week):
+            if not player_played_in_season(full_name_one, season, week):
                 return render_template('playerYearError.html', title='playerYearError.html', name=full_name_one, year=season)
             statsFirstPlayer = api_player_projection(season, week, full_name_one, application_dB)
             items_one = []
@@ -139,7 +139,7 @@ def comparison():
             player_one_table = PlayerProjectionTable(items_one)
             player_one_table.border = True
 
-            if not player_played_in_season(full_name, season, week):
+            if not player_played_in_season(full_name_two, season, week):
                 return render_template('playerYearError.html', title='playerYearError.html', name=full_name_two, year=season)
             statsSecondPlayer = api_player_projection(season, week, full_name_two, application_dB)
             items_two = []
