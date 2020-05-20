@@ -33,7 +33,7 @@ Flask-WTF==0.14.2
 gast==0.2.0
 grpcio==1.16.1
 h5py==2.8.0
-httplib2==0.14.0
+httplib2==0.18.0
 idna==2.8
 importlib-metadata==0.23
 ipaddr==2.2.0
