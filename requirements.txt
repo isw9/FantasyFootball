@@ -56,7 +56,7 @@ kiwisolver==1.0.1
 lxml==4.4.1
 Markdown==3.0.1
 MarkupSafe==1.1.1
-mistune==0.8.4
+mistune==2.0.3
 more-itertools==7.2.0
 mysql-connector==2.1.7
 mysql-connector-python-rf==2.2.2
